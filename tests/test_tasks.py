@@ -36,6 +36,14 @@ class TaskTests(unittest.TestCase):
         reloaded.recover()
         self.assertEqual(reloaded.get(first)['status'], 'aguardando aprovação')
         self.assertEqual(reloaded.get(second)['status'], 'aguardando')
+        self.assertIsNone(reloaded.claim())
+
+    def test_cancellation_request_for_running_task_is_recorded(self):
+        self.db.register('Alfa', [], self.base/'a', None)
+        task = self.db.submit('Alfa', 'Analise o README')
+        self.db.claim()
+        self.db.cancel(task)
+        self.assertEqual(self.db.get(task)['cancel_requested'], 1)
 
     def test_cancel_queued_and_reject_secret(self):
         self.db.register('Alfa', [], self.base/'a', None)

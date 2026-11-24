@@ -68,7 +68,7 @@ class TaskStore:
     def claim(self):
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            active = db.execute("SELECT 1 FROM tasks WHERE status IN ('planejando','executando','testando') LIMIT 1").fetchone()
+            active = db.execute("SELECT 1 FROM tasks WHERE status IN ('planejando','executando','testando','aguardando aprovação') LIMIT 1").fetchone()
             if active: return None
             row = db.execute("SELECT * FROM tasks WHERE status='aguardando' ORDER BY created LIMIT 1").fetchone()
             if not row: return None

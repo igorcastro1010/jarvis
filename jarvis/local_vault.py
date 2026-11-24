@@ -6,7 +6,7 @@ import uuid
 
 
 def local_root():
-    base = os.environ.get('JARVIS_LOCAL_DIR') or str(Path(os.environ['LOCALAPPDATA']) / 'Jarvis')
+    base = os.environ.get('JARVIS_LOCAL_DIR') or str(Path(os.environ['USERPROFILE']) / 'JarvisLocal')
     path = Path(base).expanduser().resolve()
     if str(path).startswith('\\\\'):
         raise ValueError('O diretório local não pode ser uma unidade de rede.')
@@ -38,6 +38,7 @@ def migrate_vault(source, dest):
 
 def get_vault():
     dest = local_root() / 'Cofre Jarvis'
-    source = Path(__file__).resolve().parent.parent / 'data' / 'Cofre Jarvis'
+    prior = Path(os.environ.get('LOCALAPPDATA', '')) / 'Jarvis' / 'Cofre Jarvis'
+    source = prior if prior.is_dir() else Path(__file__).resolve().parent.parent / 'data' / 'Cofre Jarvis'
     migrate_vault(source, dest)
     return dest
