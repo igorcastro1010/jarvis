@@ -9,6 +9,7 @@
 - Corrigir e validar acesso a diretórios em perfil MXC restrito antes de habilitar execução Codex; integrar executor em segundo plano, cancelamento real, aprovação, progresso e notificação por voz.
 - Diagnosticar timeout do Codex com runtime PowerShell autorizado, testar sessão real completa e conectar componentes de eventos, timeout e cancelamento à fila com isolamento e verificação independente.
 - Investigar processo Codex principal que permanece vivo após turno com ferramentas, inclusive sem pipes; não habilitar produção até validar ciclo completo e término da árvore.
+- V0.5.3: validar como aplicar perfil MXC restrito ao App Server instalado, com teste negativo de leitura fora do projeto; implementar transporte, gerenciamento de árvore, cancelamento e integração à fila apenas após comprovação. O handshake sem inferência encerrou, mas não comprova ciclo de turno com ferramentas.
 - Implementar orçamento efetivo por tarefa e comparar consumo com mesma tarefa concluída; verificar os limites de uso disponíveis antes de prometer um teto.
 - Implementar permissões por projeto, worktrees, commits, push e auditoria sem ampliar acesso; integrar contexto Graphify e registrar resultados seguros.
 - Proteger dados locais com criptografia apropriada e tratar ciclos concorrentes de indexação/invalidação de grafos.
