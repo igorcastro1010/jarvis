@@ -6,6 +6,9 @@
 - Homologar a V0.3 em dispositivos reais, validar bandeja e inicialização após login; medir estabilidade e falsos acionamentos.
 - Avaliar detector de palavra-chave local mais leve e confiável, descarregamento de modelos ociosos e interrupção por voz durante a fala.
 - Homologar memória por voz e edição no Obsidian; avaliar embeddings locais, política de exclusão definitiva com confirmação e limpeza de cópias em caches e backups.
+- Corrigir e validar acesso a diretórios em perfil MXC restrito antes de habilitar execução Codex; integrar executor em segundo plano, cancelamento real, aprovação, progresso e notificação por voz.
+- Implementar permissões por projeto, worktrees, commits, push e auditoria sem ampliar acesso; integrar contexto Graphify e registrar resultados seguros.
+- Proteger dados locais com criptografia apropriada e tratar ciclos concorrentes de indexação/invalidação de grafos.
 - Validar melhor isolamento de projetos por voz e relações do Graphify; integrar consulta ao grafo sem enviar conteúdo a serviços externos.
 - Criar catálogo de skills e cadastrar Fortalaka e Jack Motos sem copiar dados privados.
 - Validar e instalar Habblaud em ambiente compatível, com acesso local e sem hooks até revisão.

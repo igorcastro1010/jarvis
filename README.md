@@ -11,3 +11,5 @@ Para instalar e iniciar a conversa local por voz, consulte [docs/voz.md](docs/vo
 Para a versão experimental em segundo plano, bandeja e inicialização opcional, consulte [docs/assistente.md](docs/assistente.md). Os modos de voz usam o mesmo bloqueio e devem ser testados em sequência.
 
 Para a memória local experimental, comandos, privacidade, backup e Graphify, consulte [docs/memoria.md](docs/memoria.md).
+
+O cadastro e a fila para Codex estão disponíveis, mas o executor automático ainda está bloqueado; consulte [docs/codex.md](docs/codex.md).
