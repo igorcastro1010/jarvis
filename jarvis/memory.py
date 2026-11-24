@@ -8,6 +8,7 @@ import uuid
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import quote
 
 CATEGORIES = {'pessoal', 'preferencias', 'projetos', 'decisoes', 'tarefas', 'historico'}
 SECRET = re.compile(r'(?i)(senha|password|token|api[ _-]?key|chave privada|private key|bearer\s+\S+|sk-[a-z0-9_-]{12,})')
@@ -26,7 +27,8 @@ def tokens(text):
 def scope_name(project):
     if project is None or project == '': return 'pessoal'
     if not re.fullmatch(r'[\w -]{1,80}', project, flags=re.UNICODE): raise ValueError('Projeto inválido')
-    return 'projeto-' + re.sub(r'\s+', '-', project.strip().casefold())
+    if not project.strip(): raise ValueError('Projeto inválido')
+    return 'projeto-' + quote(project.strip().casefold(), safe='')
 
 
 class MemoryStore:
@@ -127,10 +129,12 @@ class MemoryStore:
         path = self._find(ident, project)
         header, _ = path.read_text(encoding='utf8').split('\n---\n', 1)
         old = path.read_text(encoding='utf8')
+        meta = json.loads(header.removeprefix('---\n'))
+        meta['updated'] = datetime.now(timezone.utc).isoformat()
         archive = self.root / 'Arquivo' / scope_name(project) / path.parent.name
         archive.mkdir(parents=True, exist_ok=True)
         (archive / f'{ident}-{uuid.uuid4().hex[:8]}.md').write_text(old, encoding='utf8')
         temp = path.with_suffix('.tmp')
-        temp.write_text(header + '\n---\n' + content.strip() + '\n', encoding='utf8')
+        temp.write_text('---\n' + json.dumps(meta, ensure_ascii=False) + '\n---\n' + content.strip() + '\n', encoding='utf8')
         temp.replace(path)
         self._sync()

@@ -21,6 +21,13 @@ def answer(message, session, model, memory=None):
             if session.scope != scope:
                 session.reset()
                 session.scope = scope
+            categorized = re.match(r'^(?:lembre|registre)\s+(pessoal|preferência|projeto|decisão|tarefa|histórico):\s*(.+)$', message, re.I)
+            if categorized:
+                categories = {'pessoal': 'pessoal', 'preferência': 'preferencias', 'projeto': 'projetos',
+                              'decisão': 'decisoes', 'tarefa': 'tarefas', 'histórico': 'historico'}
+                ident = memory.remember(categorized.group(2), project=project,
+                                        category=categories[categorized.group(1).casefold()], origin='usuario')
+                return f'Registrei a memória {ident}, senhor.'
             action = re.match(r'^(?:lembre|registre)(?: que)?\s+(.+)$', message, re.I)
             if action:
                 ident = memory.remember(action.group(1), project=project, origin='usuario')
@@ -29,6 +36,10 @@ def answer(message, session, model, memory=None):
             if action:
                 results = memory.search(action.group(1), project=project)
                 return '\n'.join(f"{r['id']}: {r['content']}" for r in results) or 'Não encontrei essa memória, senhor.'
+            action = re.match(r'^resuma memória sobre\s+(.+)$', message, re.I)
+            if action:
+                results = memory.search(action.group(1), project=project, limit=3)
+                return '\n'.join(f"- {r['content'][:300]} (origem: {r['origin']}, data: {r['date']})" for r in results) or 'Não encontrei essa memória, senhor.'
             action = re.match(r'^corrija memória\s+([0-9a-f]{12})\s+para\s+(.+)$', message, re.I)
             if action:
                 memory.correct(action.group(1).lower(), action.group(2), project=project)

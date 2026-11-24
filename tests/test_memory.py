@@ -42,3 +42,10 @@ class MemoryTests(unittest.TestCase):
         path.write_text(path.read_text(encoding='utf8').replace('vermelho', 'amarelo'), encoding='utf8')
         self.assertEqual(len(self.store.search('amarelo')), 1)
         self.assertEqual(self.store.search('vermelho'), [])
+
+    def test_project_names_with_space_and_hyphen_do_not_collide(self):
+        self.store.remember('O uniforme é amarelo', project='time azul')
+        self.store.remember('O uniforme é roxo', project='time-azul')
+        result = self.store.search('uniforme', project='time azul')
+        self.assertEqual(len(result), 1)
+        self.assertIn('amarelo', result[0]['content'])

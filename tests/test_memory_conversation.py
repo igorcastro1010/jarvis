@@ -24,3 +24,12 @@ class ConversationMemoryTests(unittest.TestCase):
             result = answer('lembre que minha senha é segredo', Session(), lambda _: 'BAD', store)
             self.assertIn('não', result.casefold())
             self.assertEqual(store.search('segredo'), [])
+
+    def test_can_store_decision_and_summarize_search(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = MemoryStore(tmp); session = Session()
+            answer('projeto alfa: registre decisão: usar o formato azul', session, lambda _: '', store)
+            results = store.search('formato', project='alfa')
+            self.assertEqual(results[0]['category'], 'decisoes')
+            summary = answer('projeto alfa: resuma memória sobre formato', session, lambda _: '', store)
+            self.assertIn('usar o formato azul', summary)
