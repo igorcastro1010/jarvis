@@ -10,6 +10,27 @@ SYSTEM = ('Você é Jarvis, assistente educado e objetivo. Responda em portuguê
 
 
 def answer(message, session, model, memory=None):
+    if re.match(r'^(?:codex projeto\s+[^:]+:|listar tarefas$|status tarefa\s+|cancelar tarefa\s+)', message.strip(), re.I):
+        from .tasks import default_tasks
+        try:
+            tasks = default_tasks()
+            request = re.match(r'^codex projeto\s+([^:]+):\s*(.+)$', message.strip(), re.I)
+            if request:
+                ident = tasks.submit(request.group(1).strip(), request.group(2))
+                return f'Tarefa {ident} registrada, senhor. Execução automática ainda não está disponível.'
+            request = re.match(r'^status tarefa\s+([0-9a-f]{12})$', message.strip(), re.I)
+            if request:
+                item = tasks.get(request.group(1).lower())
+                return f"Tarefa {item['id']}: {item['status']}, projeto {item['project']}."
+            request = re.match(r'^cancelar tarefa\s+([0-9a-f]{12})$', message.strip(), re.I)
+            if request:
+                tasks.cancel(request.group(1).lower())
+                return 'Cancelamento registrado, senhor.'
+            if message.strip().casefold() == 'listar tarefas':
+                rows = tasks.list(5)
+                return '; '.join(f"{r['id']}: {r['status']}" for r in rows) or 'Não há tarefas, senhor.'
+        except (ValueError, OSError):
+            return 'Não consegui registrar ou localizar essa tarefa; verifique o projeto e o pedido, senhor.'
     project = None
     match = re.match(r'^projeto\s+([^:]{1,80}):\s*(.+)$', message.strip(), re.IGNORECASE)
     if match:

@@ -3,6 +3,9 @@ import unittest
 import subprocess
 from pathlib import Path
 from jarvis.tasks import TaskStore
+from jarvis.conversation import answer
+from jarvis.voice_session import Session
+from unittest.mock import patch
 
 
 class TaskTests(unittest.TestCase):
@@ -40,3 +43,12 @@ class TaskTests(unittest.TestCase):
         self.db.cancel(task)
         self.assertEqual(self.db.get(task)['status'], 'cancelado')
         with self.assertRaises(ValueError): self.db.submit('Alfa', 'minha senha é 123')
+
+    def test_conversation_enqueues_without_launching_codex(self):
+        self.db.register('Alfa', [], self.base/'a', None)
+        with patch('jarvis.tasks.default_tasks', return_value=self.db):
+            result = answer('codex projeto Alfa: analise o README', Session(), lambda _: 'não esperado')
+            self.assertIn('registrada', result)
+            self.assertIn('não está disponível', result)
+            self.assertEqual(self.db.list()[0]['status'], 'aguardando')
+            self.assertIn('aguardando', answer('listar tarefas', Session(), lambda _: 'não esperado'))
