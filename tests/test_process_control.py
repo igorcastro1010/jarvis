@@ -6,6 +6,11 @@ from jarvis.process_control import stop_process_tree
 
 
 class ProcessTests(unittest.TestCase):
+    def test_already_exited_does_not_claim_tree_was_stopped(self):
+        process = subprocess.Popen([sys.executable, '-c', 'pass'])
+        process.wait(timeout=10)
+        self.assertFalse(stop_process_tree(process))
+
     def test_cancel_real_process_tree(self):
         script = "import subprocess,sys,time; c=subprocess.Popen([sys.executable,'-c','import time; time.sleep(60)']); print(c.pid,flush=True); time.sleep(60)"
         process = subprocess.Popen([sys.executable, '-u', '-c', script], stdout=subprocess.PIPE, text=True)

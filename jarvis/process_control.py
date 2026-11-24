@@ -4,7 +4,7 @@ import subprocess
 
 
 def stop_process_tree(process, timeout=10):
-    if process.poll() is not None: return True
+    if process.poll() is not None: return False
     if os.name != 'nt': raise OSError('Cancelamento de árvore não implementado nesta plataforma.')
     result = subprocess.run(['taskkill.exe', '/PID', str(process.pid), '/T', '/F'],
                             capture_output=True, timeout=timeout, creationflags=subprocess.CREATE_NO_WINDOW)
