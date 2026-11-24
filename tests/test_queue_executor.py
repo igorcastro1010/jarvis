@@ -69,3 +69,9 @@ class QueueExecutorTests(unittest.TestCase):
         outcome = SimpleNamespace(status='verified', events=events, elapsed_seconds=1)
         execute_next(self.store, lambda *_: outcome, enabled=True)
         self.assertEqual(self.store.get(self.task)['status'], 'aguardando aprovação')
+
+    def test_unknown_usage_never_succeeds(self):
+        events = SimpleNamespace(usage=None, message='OK')
+        outcome = SimpleNamespace(status='verified', events=events, elapsed_seconds=1)
+        execute_next(self.store, lambda *_: outcome, enabled=True)
+        self.assertEqual(self.store.get(self.task)['status'], 'aguardando aprovação')
