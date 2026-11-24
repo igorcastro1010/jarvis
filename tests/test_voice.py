@@ -1,6 +1,7 @@
 import unittest
 from jarvis.voice_session import Session, extract_wake
 from jarvis.conversation import answer
+from jarvis.voice_session import VoiceController
 
 
 class VoiceSessionTests(unittest.TestCase):
@@ -42,6 +43,18 @@ class VoiceSessionTests(unittest.TestCase):
         def forbidden(_):
             raise AssertionError('não deveria executar')
         self.assertIn('não está configurada', answer('corrija o código', s, forbidden))
+
+    def test_controller_wake_conversation_and_end(self):
+        controller = VoiceController()
+        self.assertEqual(controller.accept('bom dia'), ('ignore', ''))
+        self.assertEqual(controller.accept('Jarvis, oi'), ('answer', 'oi'))
+        self.assertEqual(controller.accept('outra pergunta'), ('answer', 'outra pergunta'))
+        self.assertEqual(controller.accept('encerrar conversa'), ('end', ''))
+        self.assertEqual(controller.accept('outra pergunta'), ('ignore', ''))
+
+    def test_push_to_talk_starts_session(self):
+        controller = VoiceController()
+        self.assertEqual(controller.accept('qual o horário?', push_to_talk=True), ('answer', 'qual o horário?'))
 
 
 if __name__ == '__main__':

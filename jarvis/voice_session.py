@@ -23,3 +23,23 @@ class Session:
 
     def should_end(self, text: str) -> bool:
         return text.casefold().strip(' .!?') in ('encerrar conversa', 'finalizar conversa', 'até mais jarvis', 'sair')
+
+
+class VoiceController:
+    def __init__(self):
+        self.active = False
+        self.session = Session()
+
+    def accept(self, text: str, push_to_talk: bool = False) -> tuple[str, str]:
+        text = text.strip()
+        if not self.active:
+            wake = extract_wake(text)
+            if wake is None and not push_to_talk:
+                return 'ignore', ''
+            self.active = True
+            text = text if wake is None else wake
+        if self.session.should_end(text):
+            self.active = False
+            self.session.reset()
+            return 'end', ''
+        return ('answer', text) if text else ('ready', '')
