@@ -16,7 +16,8 @@ STOP = {'que', 'para', 'qual', 'uma', 'como', 'sobre', 'com', 'por', 'dos', 'das
 
 
 def default_store():
-    return MemoryStore(Path(__file__).resolve().parent.parent / 'data' / 'Cofre Jarvis')
+    from .local_vault import get_vault
+    return MemoryStore(get_vault())
 
 
 def tokens(text):
