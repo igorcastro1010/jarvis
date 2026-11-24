@@ -35,7 +35,8 @@ class VoiceService:
                 return
             if not text.strip():
                 with state.lock:
-                    state.status = 'ouvindo' if state.controller.active else 'aguardando'
+                    if state.valid(ticket):
+                        state.status = 'ouvindo' if state.controller.active else 'aguardando'
                 return
             with state.lock:
                 if not state.valid(ticket):

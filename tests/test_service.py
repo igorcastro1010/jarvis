@@ -45,6 +45,23 @@ class ServiceTests(unittest.TestCase):
         service.step(); self.assertEqual(self.state.status, 'erro')
         service.step(); self.assertEqual(self.state.status, 'ouvindo')
 
+    def test_model_failure_does_not_end_service(self):
+        service = self.make_service(iter([1, 1]), iter(['Jarvis, diga algo', 'outra pergunta']))
+        def fail(_): raise OSError('offline')
+        service.model = fail
+        service.step(); self.assertEqual(self.state.status, 'erro')
+        service.model = lambda _: 'Agora disponível'
+        service.step(); self.assertEqual(self.state.status, 'ouvindo')
+        self.assertEqual(self.spoken[-1], 'Agora disponível')
+
+    def test_speech_failure_does_not_end_service(self):
+        service = self.make_service(iter([1, 1]), iter(['Jarvis', 'encerrar conversa']))
+        def fail(*_): raise OSError('sem saída')
+        service.speak = fail
+        service.step(); self.assertEqual(self.state.status, 'erro')
+        service.speak = lambda text, cancelled: self.spoken.append(text)
+        service.step(); self.assertEqual(self.state.status, 'aguardando')
+
 
 if __name__ == '__main__':
     unittest.main()
