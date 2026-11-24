@@ -1,0 +1,15 @@
+# Voz experimental — V0.2
+
+O fluxo usa Faster-Whisper small (CPU/int8), Piper Faber pt-BR e Ollama qwen2.5:3b local. Para preparar outro ambiente, use `powershell -ExecutionPolicy Bypass -File scripts/instalar-voz.ps1`; requer Python 3.12, uv, internet para baixar pacotes e modelos, e Ollama instalado com `ollama pull qwen2.5:3b`. Os modelos ficam em caches locais e em `data/`, fora do Git. Piper é GPL-3.0; confira também a licença da voz antes de distribuir.
+
+Inicie com `powershell -ExecutionPolicy Bypass -File scripts/iniciar-voz.ps1`. Diga “Jarvis”, aguarde a resposta e faça sua pergunta; ou diga “Jarvis, ...” com a pergunta. Depois continue falando. Diga “encerrar conversa” para apagar o contexto e voltar a aguardar a palavra. Ctrl+C fecha o programa. Alternativa: adicione `-PushToTalk` e pressione Enter antes de cada fala. Fones ajudam a evitar eco. Escolha entrada e saída padrão nas configurações do Windows.
+
+O microfone só abre ao escutar e é fechado antes da síntese e reprodução; Esc interrompe a reprodução, não a geração. Não há interrupção por voz durante a fala. Ativação usa transcrição em blocos, não um detector dedicado: pode falhar ou ativar indevidamente. O limiar de volume padrão é 0,012; execute `.venv\Scripts\python.exe -m jarvis.voice --threshold 0.006` para entrada baixa ou aumente para ambientes ruidosos. Não há bandeja nem inicialização automática.
+
+Até quatro pares de mensagens ficam apenas na memória do processo e são descartados ao encerrar a conversa. Os eventos de tempo e erros são gravados em `logs/voz.log` sem textos ou áudio. O texto reconhecido aparece no terminal. O modelo não recebe ferramentas, não executa ações nem Codex. Não envie segredos em voz. Os modelos são baixados de provedores externos; a inferência configurada usa `127.0.0.1` e nenhuma API paga.
+
+## Avaliação nesta máquina
+
+Ollama 0.40.18 e qwen2.5:3b: pergunta curta com carga inicial 10,07 s em GPU, geração 11 tokens em 0,288 s; `ollama ps` informou 100% GPU e 2,2 GB de alocação total do modelo. Em teste separado com `num_gpu=0`, 4,89 s com carga inicial, 11 tokens em 0,730 s; `ollama ps` informou 100% CPU e 2,1 GB. Esses valores não medem uso isolado de VRAM, consumo elétrico ou latência fim a fim e não garantem estabilidade. Uma amostra curta sintética: Piper gerou 1,66 s de áudio em 0,83 s (incluindo carga), Whisper carregou em 2,01 s e transcreveu em 1,69 s; o processo chegou a aproximadamente 544 MiB de RSS. A palavra foi reconhecida com instrução de contexto após falhar sem ela; ainda falta teste humano e avaliação de ruído.
+
+OpenJarvis já utiliza Ollama como backend; introduzi-lo aqui adicionaria outra camada sem eliminar as necessidades de áudio e autorização. Habblaud serve à visualização de agentes; não é necessário para voz. Ambos continuam pendentes de integração e testes próprios.

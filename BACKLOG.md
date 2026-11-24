@@ -1,8 +1,9 @@
 # Pendências
 
 - Instalar e testar OpenJarvis isolado em Python 3.12; avaliar dependências e telemetria.
-- Instalar Ollama, testar modelo leve, aceleração RX 6600, consumo, latência e qualidade em português.
-- Implementar ativação Jarvis, voz local, interrupção, privacidade do microfone, bandeja e inicialização reversível.
+- Homologar voz e palavra de ativação com usuário real, ruído e dispositivos físicos; medir estabilidade e latência fim a fim.
+- Ampliar avaliação de modelos e medir consumo elétrico e VRAM separadamente; repetir testes de CPU e GPU em carga sustentada.
+- Melhorar ativação Jarvis, interrupção por voz, privacidade do microfone, bandeja e inicialização reversível.
 - Verificar cofres existentes antes de escolher um único cofre Obsidian; criar cadastro seguro de projetos, memória seletiva, Graphify incremental e catálogo de skills; cadastrar Fortalaka e Jack Motos sem copiar dados privados.
 - Validar e instalar Habblaud em ambiente compatível, com acesso local e sem hooks até revisão.
 - Criar permissões por ferramenta, confirmações, parada de emergência, backups testados e rollback.
