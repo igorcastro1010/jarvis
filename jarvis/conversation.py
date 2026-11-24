@@ -10,6 +10,28 @@ SYSTEM = ('Você é Jarvis, assistente educado e objetivo. Responda em portuguê
 
 
 def answer(message, session, model, memory=None):
+    scoped = re.fullmatch(r'projeto\s+([^:]{1,80}):\s*(gerar prompt:\s*.+)', message.strip(), re.I)
+    skill_project = scoped.group(1).strip() if scoped else None
+    skill_message = scoped.group(2) if scoped else message.strip()
+    command = re.fullmatch(r'(listar skills|(?:ativar|desativar) skill\s+[\w-]+|buscar skills(?:\s+[\w -]+)?|gerar prompt:\s*.+)', skill_message, re.I)
+    if command:
+        from .skills import build_prompt, default_manager, discover
+        try:
+            manager = default_manager()
+            text = skill_message
+            if text.casefold() == 'listar skills':
+                return '; '.join(f"{s['name']}: {'ativa' if s['enabled'] else 'inativa'}" for s in manager.list())
+            if text.casefold() == 'buscar skills':
+                return 'Informe os termos após buscar skills. Instalação exige autorização.'
+            if text.casefold().startswith('buscar skills '):
+                return discover(text[len('buscar skills '):])[:1200] + '\nResultados externos exigem revisão.'
+            action = re.fullmatch(r'(ativar|desativar) skill\s+([\w-]+)', text, re.I)
+            if action:
+                manager.set_enabled(action.group(2), action.group(1).casefold() == 'ativar')
+                return 'Preferência atualizada. A skill não foi instalada nem executada.'
+            return build_prompt(manager, text.split(':', 1)[1], memory, skill_project)
+        except (ValueError, OSError, RuntimeError):
+            return 'Não foi possível processar o pedido de skills, senhor.'
     if re.match(r'^(?:codex projeto\s+[^:]+:|listar tarefas$|status tarefa\s+|cancelar tarefa\s+)', message.strip(), re.I):
         from .tasks import default_tasks
         try:
