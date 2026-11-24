@@ -7,6 +7,8 @@
 - Avaliar detector de palavra-chave local mais leve e confiável, descarregamento de modelos ociosos e interrupção por voz durante a fala.
 - Homologar memória por voz e edição no Obsidian; avaliar embeddings locais, política de exclusão definitiva com confirmação e limpeza de cópias em caches e backups.
 - Corrigir e validar acesso a diretórios em perfil MXC restrito antes de habilitar execução Codex; integrar executor em segundo plano, cancelamento real, aprovação, progresso e notificação por voz.
+- Diagnosticar timeout do Codex com runtime PowerShell autorizado, testar sessão real completa e conectar componentes de eventos, timeout e cancelamento à fila com isolamento e verificação independente.
+- Implementar orçamento efetivo por tarefa e comparar consumo com mesma tarefa concluída; verificar os limites de uso disponíveis antes de prometer um teto.
 - Implementar permissões por projeto, worktrees, commits, push e auditoria sem ampliar acesso; integrar contexto Graphify e registrar resultados seguros.
 - Proteger dados locais com criptografia apropriada e tratar ciclos concorrentes de indexação/invalidação de grafos.
 - Validar melhor isolamento de projetos por voz e relações do Graphify; integrar consulta ao grafo sem enviar conteúdo a serviços externos.

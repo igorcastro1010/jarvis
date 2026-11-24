@@ -12,4 +12,4 @@ Para a versão experimental em segundo plano, bandeja e inicialização opcional
 
 Para a memória local experimental, comandos, privacidade, backup e Graphify, consulte [docs/memoria.md](docs/memoria.md).
 
-O cadastro e a fila para Codex estão disponíveis, mas o executor automático ainda está bloqueado; consulte [docs/codex.md](docs/codex.md).
+O cadastro e a fila para Codex estão disponíveis, mas o executor automático ainda está bloqueado; o diagnóstico da V0.5.1 e os testes estão em [docs/codex.md](docs/codex.md).

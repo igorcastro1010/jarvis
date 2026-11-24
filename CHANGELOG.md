@@ -1,6 +1,7 @@
 # Histórico
 
 ## Não lançado
+- Diagnóstico MXC e componentes isolados de perfil, eventos, orçamento observado e cancelamento; executor automático ainda bloqueado.
 - Cadastro e fila persistente de pedidos Codex; execução automática bloqueada por limitação de acesso no teste restrito.
 - Migração aditiva do cofre para JarvisLocal e invalidação de grafos derivados ao corrigir ou arquivar.
 - Memória local em Markdown, índice incremental textual, escopos por projeto, arquivamento, backup e Graphify local sob demanda.
