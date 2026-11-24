@@ -13,3 +13,5 @@ Para a versão experimental em segundo plano, bandeja e inicialização opcional
 Para a memória local experimental, comandos, privacidade, backup e Graphify, consulte [docs/memoria.md](docs/memoria.md).
 
 O cadastro e a fila para Codex estão disponíveis, mas o executor automático ainda está bloqueado; a investigação da V0.5.3 está em [docs/codex.md](docs/codex.md).
+
+O catálogo experimental de skills e a geração manual de prompts estão descritos em [docs/skills.md](docs/skills.md).
