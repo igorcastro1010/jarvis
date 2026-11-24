@@ -3,7 +3,7 @@
 - Instalar e testar OpenJarvis isolado em Python 3.12; avaliar dependências e telemetria.
 - Instalar Ollama, testar modelo leve, aceleração RX 6600, consumo, latência e qualidade em português.
 - Implementar ativação Jarvis, voz local, interrupção, privacidade do microfone, bandeja e inicialização reversível.
-- Criar cofre Obsidian e cadastro seguro de projetos, memória seletiva, Graphify incremental e catálogo de skills; cadastrar Fortalaka e Jack Motos sem copiar dados privados.
+- Verificar cofres existentes antes de escolher um único cofre Obsidian; criar cadastro seguro de projetos, memória seletiva, Graphify incremental e catálogo de skills; cadastrar Fortalaka e Jack Motos sem copiar dados privados.
 - Validar e instalar Habblaud em ambiente compatível, com acesso local e sem hooks até revisão.
 - Criar permissões por ferramenta, confirmações, parada de emergência, backups testados e rollback.
 - Integrar Excel, resolver ambiguidades e persistir alterações com backup; a função atual só manipula registros em memória.
