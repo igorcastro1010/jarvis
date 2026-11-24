@@ -25,3 +25,11 @@ class CodexProcessTests(unittest.TestCase):
         event = threading.Event(); threading.Timer(0.5, event.set).start()
         result = run_process([sys.executable, '-u', '-c', script], '', cancelled=event.is_set, timeout=10)
         self.assertEqual(result.status, 'cancelled')
+
+    def test_parent_exit_does_not_wait_for_inherited_pipe_from_child(self):
+        events = [{'type':'item.completed','item':{'type':'agent_message','text':'ok'}},
+                  {'type':'turn.completed','usage':{'input_tokens':10,'output_tokens':1}}]
+        script = "import subprocess,sys,json; subprocess.Popen([sys.executable,'-c','import time; time.sleep(3)']); events="+repr(events)+"; [print(json.dumps(e),flush=True) for e in events]"
+        result = run_process([sys.executable, '-u', '-c', script], '', verifier=lambda: True, timeout=5)
+        self.assertEqual(result.status, 'termination_unconfirmed')
+        self.assertLess(result.elapsed_seconds, 2)

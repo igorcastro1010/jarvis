@@ -33,13 +33,14 @@ def run_process(argv, prompt, *, verifier=None, timeout=120, cancelled=lambda: F
         try:
             for line in process.stdout: lines.put(line)
         finally:
+            process.stdout.close()
             lines.put(None)
     reader = threading.Thread(target=read_output, daemon=True)
     reader.start()
     try:
         process.stdin.write(prompt)
         process.stdin.close()
-        events = CodexEvents(); ended = False
+        events = CodexEvents(); ended = False; parent_exited = None
         while True:
             try:
                 line = lines.get(timeout=0.1)
@@ -48,6 +49,10 @@ def run_process(argv, prompt, *, verifier=None, timeout=120, cancelled=lambda: F
                     try: events.feed(json.loads(line))
                     except (ValueError, TypeError): pass
             except queue.Empty: pass
+            if process.poll() is not None and parent_exited is None:
+                parent_exited = time.monotonic()
+            if parent_exited is not None and not ended and lines.empty() and time.monotonic() - parent_exited > 0.5:
+                return ProcessResult('termination_unconfirmed', events, time.monotonic()-started)
             is_cancelled = cancelled()
             if is_cancelled or time.monotonic() - started >= timeout:
                 reason = 'cancelled' if is_cancelled else 'timeout'
