@@ -120,6 +120,7 @@ class MemoryStore:
 
     def forget(self, ident, project=None):
         path = self._find(ident, project)
+        self.invalidate_graph(project)
         archive = self.root / 'Arquivo' / scope_name(project) / path.parent.name
         archive.mkdir(parents=True, exist_ok=True)
         path.replace(archive / f'{ident}-{uuid.uuid4().hex[:8]}.md')
@@ -128,6 +129,7 @@ class MemoryStore:
     def correct(self, ident, content, project=None):
         if not content.strip() or len(content) > 4000 or SECRET.search(content): raise ValueError('Conteúdo inválido ou confidencial')
         path = self._find(ident, project)
+        self.invalidate_graph(project)
         header, _ = path.read_text(encoding='utf8').split('\n---\n', 1)
         old = path.read_text(encoding='utf8')
         meta = json.loads(header.removeprefix('---\n'))
@@ -139,3 +141,15 @@ class MemoryStore:
         temp.write_text('---\n' + json.dumps(meta, ensure_ascii=False) + '\n---\n' + content.strip() + '\n', encoding='utf8')
         temp.replace(path)
         self._sync()
+
+    def invalidate_graph(self, project=None):
+        graphs = self.root / '.jarvis-grafos'
+        scope = scope_name(project)
+        target = graphs / scope
+        if graphs.is_symlink() or target.is_symlink():
+            raise ValueError('Grafo derivado contém link simbólico.')
+        if target.exists():
+            archive = self.root / '.jarvis-grafos-invalidados'
+            if archive.is_symlink(): raise ValueError('Destino de invalidação inválido.')
+            archive.mkdir(parents=True, exist_ok=True)
+            target.rename(archive / f'{scope}-{uuid.uuid4().hex}')

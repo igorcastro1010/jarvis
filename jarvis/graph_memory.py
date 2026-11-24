@@ -33,7 +33,8 @@ def main():
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     executable = root / 'data/graphify-venv/Scripts/graphify.exe'
-    path = update_graph(default_store(), args.projeto, root / 'data/grafos', executable)
+    store = default_store()
+    path = update_graph(store, args.projeto, store.root / '.jarvis-grafos', executable)
     print('Grafo gerado em:', path)
 
 

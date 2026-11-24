@@ -49,3 +49,12 @@ class MemoryTests(unittest.TestCase):
         result = self.store.search('uniforme', project='time azul')
         self.assertEqual(len(result), 1)
         self.assertIn('amarelo', result[0]['content'])
+
+    def test_forgetting_invalidates_derived_graph_for_scope(self):
+        ident = self.store.remember('A cor é azul', project='alpha')
+        graph = self.root / '.jarvis-grafos' / 'projeto-alpha' / 'graphify-out'
+        graph.mkdir(parents=True)
+        (graph / 'graph.json').write_text('{"old":true}', encoding='utf8')
+        self.store.forget(ident, project='alpha')
+        self.assertFalse(graph.exists())
+        self.assertTrue(list((self.root / '.jarvis-grafos-invalidados').rglob('graph.json')))
