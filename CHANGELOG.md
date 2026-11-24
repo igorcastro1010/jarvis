@@ -1,6 +1,7 @@
 # Histórico
 
 ## Não lançado
+- Adaptador de fila inativo por padrão, limites observados, eventos e preparação de worktree; encerramento real do Codex ainda não homologado.
 - Diagnóstico MXC e componentes isolados de perfil, eventos, orçamento observado e cancelamento; executor automático ainda bloqueado.
 - Cadastro e fila persistente de pedidos Codex; execução automática bloqueada por limitação de acesso no teste restrito.
 - Migração aditiva do cofre para JarvisLocal e invalidação de grafos derivados ao corrigir ou arquivar.
