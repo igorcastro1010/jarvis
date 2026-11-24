@@ -5,6 +5,13 @@ from jarvis import voice
 
 
 class AudioTests(unittest.TestCase):
+    def test_console_refuses_when_resident_is_running(self):
+        class Busy:
+            def acquire(self): return False
+            def close(self): pass
+        with patch('jarvis.background.InstanceLock', return_value=Busy()):
+            self.assertEqual(voice.main(), 2)
+
     def test_cancel_stops_capture_and_closes_microphone(self):
         class Stream:
             closed = False

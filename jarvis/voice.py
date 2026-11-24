@@ -61,7 +61,7 @@ def speak(voice, text):
     return True
 
 
-def main():
+def _main():
     parser = argparse.ArgumentParser(description='Jarvis: conversa local por voz')
     parser.add_argument('--push-to-talk', action='store_true', help='Enter inicia cada gravação')
     parser.add_argument('--threshold', type=float, default=0.012, help='limiar de detecção de voz')
@@ -124,6 +124,19 @@ def main():
         LOG.error('voice_error=%s', type(exc).__name__)
         print(f'Não foi possível iniciar ou usar o áudio: {exc}')
         return 1
+
+
+def main():
+    from .background import InstanceLock
+    lock = InstanceLock()
+    if not lock.acquire():
+        lock.close()
+        print('Já existe uma sessão de voz Jarvis em execução.')
+        return 2
+    try:
+        return _main()
+    finally:
+        lock.close()
 
 
 if __name__ == '__main__':
