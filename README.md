@@ -9,3 +9,5 @@ Consulte [ROADMAP.md](ROADMAP.md), [BACKLOG.md](BACKLOG.md), [SECURITY.md](SECUR
 Para instalar e iniciar a conversa local por voz, consulte [docs/voz.md](docs/voz.md).
 
 Para a versão experimental em segundo plano, bandeja e inicialização opcional, consulte [docs/assistente.md](docs/assistente.md). Os modos de voz usam o mesmo bloqueio e devem ser testados em sequência.
+
+Para a memória local experimental, comandos, privacidade, backup e Graphify, consulte [docs/memoria.md](docs/memoria.md).

@@ -5,7 +5,9 @@
 - Ampliar avaliação de modelos e medir consumo elétrico e VRAM separadamente; repetir testes de CPU e GPU em carga sustentada.
 - Homologar a V0.3 em dispositivos reais, validar bandeja e inicialização após login; medir estabilidade e falsos acionamentos.
 - Avaliar detector de palavra-chave local mais leve e confiável, descarregamento de modelos ociosos e interrupção por voz durante a fala.
-- Verificar cofres existentes antes de escolher um único cofre Obsidian; criar cadastro seguro de projetos, memória seletiva, Graphify incremental e catálogo de skills; cadastrar Fortalaka e Jack Motos sem copiar dados privados.
+- Homologar memória por voz e edição no Obsidian; avaliar embeddings locais, política de exclusão definitiva com confirmação e limpeza de cópias em caches e backups.
+- Validar melhor isolamento de projetos por voz e relações do Graphify; integrar consulta ao grafo sem enviar conteúdo a serviços externos.
+- Criar catálogo de skills e cadastrar Fortalaka e Jack Motos sem copiar dados privados.
 - Validar e instalar Habblaud em ambiente compatível, com acesso local e sem hooks até revisão.
 - Criar permissões por ferramenta, confirmações, parada de emergência, backups testados e rollback.
 - Integrar Excel, resolver ambiguidades e persistir alterações com backup; a função atual só manipula registros em memória.
