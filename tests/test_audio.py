@@ -5,6 +5,17 @@ from jarvis import voice
 
 
 class AudioTests(unittest.TestCase):
+    def test_cancel_stops_capture_and_closes_microphone(self):
+        class Stream:
+            closed = False
+            def __init__(self, **kwargs): pass
+            def __enter__(self): return self
+            def __exit__(self, *args): Stream.closed = True
+            def read(self, block): return np.ones((block, 1), dtype='float32'), False
+        with patch.object(voice.sd, 'InputStream', Stream):
+            self.assertIsNone(voice.listen(cancelled=lambda: True))
+        self.assertTrue(Stream.closed)
+
     def test_capture_closes_stream_after_voice_and_silence(self):
         class Stream:
             closed = False

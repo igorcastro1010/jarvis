@@ -18,7 +18,7 @@ VOICE = Path(__file__).resolve().parent.parent / 'data/models/piper/pt_BR-faber-
 LOG = logging.getLogger('jarvis.voice')
 
 
-def listen(threshold=0.012, max_seconds=12, wait_seconds=8):
+def listen(threshold=0.012, max_seconds=12, wait_seconds=8, cancelled=lambda: False):
     """Capture uma frase; descarta silêncio e fecha o dispositivo ao retornar."""
     chunks = []
     started = False
@@ -26,7 +26,11 @@ def listen(threshold=0.012, max_seconds=12, wait_seconds=8):
     block = RATE // 5
     with sd.InputStream(samplerate=RATE, channels=1, dtype='float32', blocksize=block) as stream:
         for _ in range((max_seconds + wait_seconds) * 5):
+            if cancelled():
+                return None
             data, overflow = stream.read(block)
+            if cancelled():
+                return None
             if overflow:
                 LOG.warning('audio_input_overflow')
             mono = data[:, 0].copy()
