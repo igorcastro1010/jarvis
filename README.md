@@ -7,3 +7,5 @@ Execute `python -m jarvis` para experimentar por texto. Depois de instalar as de
 Consulte [ROADMAP.md](ROADMAP.md), [BACKLOG.md](BACKLOG.md), [SECURITY.md](SECURITY.md) e [docs/auditoria.md](docs/auditoria.md). Não coloque dados pessoais ou credenciais no repositório.
 
 Para instalar e iniciar a conversa local por voz, consulte [docs/voz.md](docs/voz.md).
+
+Para a versão experimental em segundo plano, bandeja e inicialização opcional, consulte [docs/assistente.md](docs/assistente.md). Os modos de voz usam o mesmo bloqueio e devem ser testados em sequência.
