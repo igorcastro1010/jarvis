@@ -14,6 +14,10 @@ SECRET = re.compile(r'(?i)(senha|password|token|api[ _-]?key|chave privada|priva
 STOP = {'que', 'para', 'qual', 'uma', 'como', 'sobre', 'com', 'por', 'dos', 'das', 'não', 'uma', 'isso'}
 
 
+def default_store():
+    return MemoryStore(Path(__file__).resolve().parent.parent / 'data' / 'Cofre Jarvis')
+
+
 def tokens(text):
     text = ''.join(c for c in unicodedata.normalize('NFKD', text.casefold()) if not unicodedata.combining(c))
     return {x for x in re.findall(r'\w+', text) if len(x) > 2 and x not in STOP}

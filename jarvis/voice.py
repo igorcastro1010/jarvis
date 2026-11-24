@@ -77,6 +77,8 @@ def _main():
         stt = WhisperModel('small', device='cpu', compute_type='int8', cpu_threads=4)
         voice = PiperVoice.load(VOICE)
         controller = VoiceController()
+        from .memory import default_store
+        memory = default_store()
         print('Microfone ativo. Diga Jarvis; Esc interrompe a fala; Ctrl+C encerra.')
         while True:
             if args.push_to_talk:
@@ -108,7 +110,7 @@ def _main():
             else:
                 try:
                     start = time.perf_counter()
-                    response = answer(message, controller.session, ollama)
+                    response = answer(message, controller.session, ollama, memory)
                     LOG.info('response_seconds=%.2f', time.perf_counter() - start)
                 except (OSError, ValueError, KeyError, TimeoutError):
                     LOG.warning('local_model_unavailable')

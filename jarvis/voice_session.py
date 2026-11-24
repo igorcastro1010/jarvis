@@ -13,6 +13,7 @@ class Session:
             raise ValueError('max_turns deve ser positivo')
         self.max_turns = max_turns
         self.history: list[dict[str, str]] = []
+        self.scope = None
 
     def remember(self, user: str, assistant: str) -> None:
         self.history.extend([{'role': 'user', 'content': user}, {'role': 'assistant', 'content': assistant}])
@@ -20,6 +21,7 @@ class Session:
 
     def reset(self) -> None:
         self.history.clear()
+        self.scope = None
 
     def should_end(self, text: str) -> bool:
         return text.casefold().strip(' .!?') in ('encerrar conversa', 'finalizar conversa', 'até mais jarvis', 'sair')

@@ -8,10 +8,11 @@ LOG = logging.getLogger('jarvis.service')
 
 
 class VoiceService:
-    def __init__(self, state, settings, capture, transcribe, speak, model, clock=time.monotonic):
+    def __init__(self, state, settings, capture, transcribe, speak, model, clock=time.monotonic, memory=None):
         self.state, self.settings = state, settings
         self.capture, self.transcribe, self.speak, self.model = capture, transcribe, speak, model
         self.clock = clock
+        self.memory = memory
 
     def step(self):
         state = self.state
@@ -46,6 +47,7 @@ class VoiceService:
                     state.last_activity = self.clock()
                 session = Session(state.controller.session.max_turns)
                 session.history = list(state.controller.session.history)
+                session.scope = state.controller.session.scope
             if action == 'ignore':
                 with state.lock:
                     if state.valid(ticket):
@@ -56,12 +58,13 @@ class VoiceService:
             elif action == 'end':
                 response = 'Até logo, senhor.'
             else:
-                response = answer(message, session, self.model)
+                response = answer(message, session, self.model, self.memory)
             with state.lock:
                 if not state.valid(ticket):
                     return
                 if action == 'answer':
                     state.controller.session.history = session.history
+                    state.controller.session.scope = session.scope
                 state.status = 'falando'
             self.speak(response, lambda: not state.valid(ticket))
             with state.lock:

@@ -14,6 +14,7 @@ from .background import AssistantState, InstanceLock, Settings, load_settings, s
 from .conversation import ollama
 from .service import VoiceService
 from .voice import VOICE, listen
+from .memory import default_store
 
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG = ROOT / 'data' / 'configuracao.json'
@@ -109,7 +110,7 @@ def main():
     state = AssistantState()
     store = [load_settings(CONFIG)]
     adapters = AudioAdapters()
-    service = VoiceService(state, lambda: store[0], listen, adapters.transcribe, adapters.speak, ollama)
+    service = VoiceService(state, lambda: store[0], listen, adapters.transcribe, adapters.speak, ollama, memory=default_store())
     menu = pystray.Menu(
         pystray.MenuItem(lambda _: f'Estado: {state.status}', None, enabled=False),
         pystray.MenuItem('Ativar conversa', lambda: state.activate(time.monotonic())),
