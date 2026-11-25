@@ -8,13 +8,31 @@ LOG = logging.getLogger('jarvis.service')
 
 
 class VoiceService:
-    def __init__(self, state, settings, capture, transcribe, speak, model, clock=time.monotonic, memory=None, on_exchange=None, shared=None):
+    def __init__(self, state, settings, capture, transcribe, speak, model, clock=time.monotonic, memory=None, on_exchange=None, shared=None, release_idle=None):
         self.state, self.settings = state, settings
         self.capture, self.transcribe, self.speak, self.model = capture, transcribe, speak, model
         self.clock = clock
         self.memory = memory
         self.on_exchange = on_exchange
         self.shared = shared
+        self.release_idle = release_idle
+        self.muted_since = None
+        self.idle_released = False
+
+    def manage_idle(self, now):
+        with self.state.lock:
+            muted = self.state.status == 'silenciado'
+        if not muted:
+            self.muted_since = None
+            self.idle_released = False
+        elif self.muted_since is None:
+            self.muted_since = now
+        elif not self.idle_released and now - self.muted_since >= 120 and self.release_idle:
+            self.idle_released = True
+            try:
+                self.release_idle()
+            except Exception as exc:
+                LOG.warning('idle_release_failed type=%s', type(exc).__name__)
 
     def step(self):
         state = self.state
@@ -87,6 +105,7 @@ class VoiceService:
 
     def run(self):
         while not self.state.stopped:
+            self.manage_idle(self.clock())
             if self.state.status == 'silenciado':
                 time.sleep(0.2)
                 continue

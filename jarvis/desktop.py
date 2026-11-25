@@ -72,7 +72,7 @@ class CoreRing(QWidget):
         self.setMinimumSize(280, 250)
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.tick)
-        self.timer.start(100)
+        self.timer.setInterval(100)
 
     def tick(self):
         if self.status == 'processando':
@@ -345,7 +345,7 @@ class Window(QMainWindow):
             capture = lambda **kwargs: listen(**kwargs, device=device_in, on_level=self.voice_signals.level.emit)
             service = VoiceService(state, lambda: load_settings(self.config_path), capture, adapters.transcribe,
                                    adapters.speak, self.model, memory=self.memory_factory() if self.memory_factory else default_store(),
-                                   on_exchange=self.voice_signals.exchange.emit, shared=self.shared)
+                                   on_exchange=self.voice_signals.exchange.emit, shared=self.shared, release_idle=adapters.release)
             self.voice_state, self.voice_lock = state, lock
             self.voice_thread = threading.Thread(target=service.run, daemon=True, name='jarvis-voz')
             self.voice_thread.start()
@@ -438,6 +438,8 @@ class Window(QMainWindow):
 
     def set_status(self, status):
         self.status = status; self.state_label.setText(status.capitalize()); self.ring.status = status; self.ring.update()
+        if status == 'processando': self.ring.timer.start()
+        else: self.ring.timer.stop()
 
     def send(self):
         text = self.message.text().strip()

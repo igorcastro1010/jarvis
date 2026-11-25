@@ -30,6 +30,12 @@ class AudioAdapters:
         self.output_device = output_device
         self.volume = volume
 
+    def release(self):
+        import gc
+        self.recognizer = None
+        self.voice = None
+        gc.collect()
+
     def transcribe(self, audio):
         try:
             if self.recognizer is None:
@@ -114,7 +120,7 @@ def main():
     state = AssistantState()
     store = [load_settings(CONFIG)]
     adapters = AudioAdapters()
-    service = VoiceService(state, lambda: store[0], listen, adapters.transcribe, adapters.speak, ollama, memory=default_store())
+    service = VoiceService(state, lambda: store[0], listen, adapters.transcribe, adapters.speak, ollama, memory=default_store(), release_idle=adapters.release)
     menu = pystray.Menu(
         pystray.MenuItem(lambda _: f'Estado: {state.status}', None, enabled=False),
         pystray.MenuItem('Ativar conversa', lambda: state.activate(time.monotonic())),

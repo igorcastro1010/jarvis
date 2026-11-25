@@ -4,6 +4,19 @@ from jarvis.service import VoiceService
 
 
 class ServiceTests(unittest.TestCase):
+    def test_idle_release_only_after_sustained_mute(self):
+        service = self.make_service(iter([]), iter([]))
+        released = []
+        service.release_idle = lambda: released.append(True)
+        self.state.mute()
+        service.manage_idle(10); service.manage_idle(129)
+        self.assertEqual(released, [])
+        service.manage_idle(130); service.manage_idle(200)
+        self.assertEqual(released, [True])
+        self.state.unmute(); service.manage_idle(201)
+        self.state.mute(); service.manage_idle(202); service.manage_idle(322)
+        self.assertEqual(len(released), 2)
+
     def test_voice_events_are_reported_only_for_accepted_turns(self):
         events = []
         service = self.make_service(iter([1, 1]), iter(['som estranho', 'Jarvis, que horas são?']))

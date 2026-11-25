@@ -69,6 +69,13 @@ class DesktopTests(unittest.TestCase):
         self.window.toggle_compact()
         self.assertEqual(self.window.width(), 800)
 
+    def test_idle_ring_does_not_poll_when_not_processing(self):
+        self.assertFalse(self.window.ring.timer.isActive())
+        self.window.set_status('processando')
+        self.assertTrue(self.window.ring.timer.isActive())
+        self.window.set_status('aguardando')
+        self.assertFalse(self.window.ring.timer.isActive())
+
     def test_settings_persist_and_history_does_not_store_secrets(self):
         from jarvis.background import load_settings
         root = Path(self.tmp.name)
