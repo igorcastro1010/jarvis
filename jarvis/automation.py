@@ -11,7 +11,8 @@ import uuid
 import webbrowser
 from contextlib import closing
 
-from .public_web import search_web, weather
+from .public_web import weather
+from .research import search as search_web, news, summarize
 
 SITES = {'youtube': 'https://www.youtube.com/', 'chatgpt': 'https://chatgpt.com/', 'github': 'https://github.com/'}
 VOLUMES = {'aumentar volume': 'up', 'diminuir volume': 'down', 'silenciar volume': 'mute'}
@@ -20,12 +21,12 @@ SUGGESTIONS = ('abrir youtube', 'abrir chatgpt', 'abrir github', 'abrir chrome',
                'aumentar volume', 'diminuir volume', 'silenciar volume', 'capturar tela')
 TOOLS = {'sites': 'Destinos fixos YouTube, ChatGPT e GitHub', 'aplicativos': 'Somente aplicativos permitidos',
          'projetos': 'Somente projetos cadastrados', 'clima': 'Open-Meteo para Fortaleza',
-         'pesquisa': 'Busca pública na Wikipédia', 'sistema': 'CPU, RAM e armazenamento',
+         'pesquisa': 'Wikipédia, Crossref e notícias da Agência Brasil', 'sistema': 'CPU, RAM e armazenamento',
          'volume': 'Confirmação necessária', 'captura': 'Confirmação necessária'}
 
 
 def is_automation_request(message):
-    return bool(re.match(r'^(?:abrir|abra|localizar|encontrar|pesquisar na internet|pesquise na internet|pesquisar na wikipedia|pesquise na wikipedia|qual o clima|como está o clima|clima|qual a previsão do tempo|previsão do tempo|definir cidade|configurar cidade|aumentar volume|diminuir volume|silenciar volume|capturar tela|capturar screenshot|tirar screenshot|recursos do sistema|uso do sistema|uso de cpu e memória|confirmar|cancelar ação)(?:\s|$|[?.!])', message.strip(), re.I))
+    return bool(re.match(r'^(?:abrir|abra|localizar|encontrar|pesquisar na internet|pesquise na internet|pesquisar na wikipedia|pesquise na wikipedia|notícias|noticias|últimas notícias|ultimas noticias|resumir página|resuma a página|qual o clima|como está o clima|clima|qual a previsão do tempo|previsão do tempo|definir cidade|configurar cidade|aumentar volume|diminuir volume|silenciar volume|capturar tela|capturar screenshot|tirar screenshot|recursos do sistema|uso do sistema|uso de cpu e memória|confirmar|cancelar ação)(?:\s|$|[?.!])', message.strip(), re.I))
 
 
 def suggest_command(request, model):
@@ -70,7 +71,7 @@ class Automation:
         self.pending = (action, value, self.clock() + 60)
         return f'Confirmar {label}? Diga confirmar ou cancelar ação em até 60 segundos.'
 
-    def handle(self, message):
+    def handle(self, message, model=None):
         text = message.strip().casefold().rstrip('?.!')
         if text == 'cancelar ação':
             self.reset()
@@ -84,6 +85,12 @@ class Automation:
             action, value, _ = pending
             return self._run(action, lambda: self._volume(value) if action == 'volume' else self._screenshot())
         self.reset()
+        if text in ('notícias', 'noticias', 'últimas notícias', 'ultimas noticias'):
+            return self._run('notícias', news)
+        match = re.fullmatch(r'(?:resumir página|resuma a página)\s+(https://\S+)', message.strip(), re.I)
+        if match:
+            if model is None: return 'Ollama indisponível para resumir a página.'
+            return self._run('resumo', lambda: summarize(match.group(1), model))
         if text in VOLUMES: return self._request('volume', VOLUMES[text], text)
         if text in ('capturar tela', 'capturar screenshot', 'tirar screenshot'):
             return self._request('captura', None, 'captura da tela')

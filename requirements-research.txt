@@ -1,0 +1,2 @@
+# Opcional: leitura de páginas com navegador isolado; requer Google Chrome instalado.
+playwright>=1.50,<2

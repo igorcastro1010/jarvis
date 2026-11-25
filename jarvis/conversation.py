@@ -31,7 +31,7 @@ def answer(message, session, model, memory=None):
         try:
             if not hasattr(session, 'automation'):
                 session.automation = default_automation()
-            result = session.automation.handle(message)
+            result = session.automation.handle(message, model=model)
             if result is not None: return result
             return 'Não reconheci esse comando de ferramenta; nenhuma ação foi executada.'
         except (OSError, ValueError, sqlite3.Error):
