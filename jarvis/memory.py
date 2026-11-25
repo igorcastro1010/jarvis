@@ -15,6 +15,10 @@ SECRET = re.compile(r'(?i)(senha|password|token|api[ _-]?key|chave privada|priva
 STOP = {'que', 'para', 'qual', 'uma', 'como', 'sobre', 'com', 'por', 'dos', 'das', 'não', 'uma', 'isso'}
 
 
+def linked(path):
+    return path.is_symlink() or path.is_junction()
+
+
 def default_store():
     from .local_vault import get_vault
     return MemoryStore(get_vault())
@@ -54,15 +58,16 @@ class MemoryStore:
         if category not in CATEGORIES: raise ValueError('Categoria inválida')
         scope = scope_name(project)
         folder = self.notes / scope / category
-        if folder.is_symlink() or folder.parent.is_symlink(): raise ValueError('Links não são permitidos')
+        if linked(self.notes) or linked(folder) or linked(folder.parent): raise ValueError('Links não são permitidos')
         return folder, scope
 
     def _sync(self):
+        if linked(self.notes): raise ValueError('Links não são permitidos')
         with self.connect() as conn:
             prior = {r[0]: (r[1], r[2]) for r in conn.execute('SELECT path, stamp, size FROM notes')}
             seen = set()
             for path in self.notes.glob('*/*/*.md'):
-                if path.is_symlink() or path.parent.is_symlink() or path.parent.parent.is_symlink(): continue
+                if linked(path) or linked(path.parent) or linked(path.parent.parent): continue
                 name = str(path.relative_to(self.notes)); seen.add(name)
                 stat = path.stat()
                 if prior.get(name) == (stat.st_mtime_ns, stat.st_size): continue
@@ -115,7 +120,7 @@ class MemoryStore:
             row = conn.execute('SELECT path FROM notes WHERE id=? AND scope=?', (ident, scope)).fetchone()
         if not row: raise ValueError('Memória não encontrada neste contexto')
         path = self.notes / row[0]
-        if path.is_symlink() or path.parent.is_symlink() or path.parent.parent.is_symlink(): raise ValueError('Link não permitido')
+        if linked(self.notes) or linked(path) or linked(path.parent) or linked(path.parent.parent): raise ValueError('Link não permitido')
         return path
 
     def forget(self, ident, project=None):

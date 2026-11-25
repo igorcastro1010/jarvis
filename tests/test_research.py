@@ -44,3 +44,18 @@ class ResearchTests(unittest.TestCase):
                 result = answer('resumir página https://www.gov.br/pt-br', Session(), lambda _: 'Resumo')
             self.assertIn('Resumo', result)
             screenshot.assert_not_called()
+
+    def test_playwright_isolates_scripts_on_public_page_copy(self):
+        import os
+        from pathlib import Path
+        if os.name != 'nt' or not (Path(os.environ.get('PROGRAMFILES', 'C:/Program Files')) / 'Google/Chrome/Application/chrome.exe').exists():
+            self.skipTest('Google Chrome não instalado no local padrão')
+        try:
+            import playwright.sync_api  # noqa: F401
+        except ImportError:
+            self.skipTest('Playwright indisponível')
+        body = b'<html><body>Texto seguro<script>document.body.innerText="EXECUTADO"</script><iframe src="http://127.0.0.1:9/"></iframe></body></html>'
+        with patch('jarvis.research.fetch_bytes', return_value=body):
+            result = research.read_page('https://www.gov.br/pt-br')
+        self.assertIn('Texto seguro', result)
+        self.assertNotIn('EXECUTADO', result)
