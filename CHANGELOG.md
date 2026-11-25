@@ -1,6 +1,7 @@
 # Histórico
 
 ## Não lançado
+- V0.9.2: investigação de isolamento registra ausência de distribuição WSL2 de trabalho, Docker parado e limitações das alternativas; execução Codex continua desativada.
 - V0.9.1 parcial: falhas e dados incompletos do CLI tratados de forma conservadora, junções recusadas em worktrees e métricas da fila exibidas; execução Codex segue desativada após recusa do sandbox restrito.
 - V0.9 parcial: diagnóstico local sob demanda, registro rotativo de contagem de tokens, limite de recuperação do serviço de voz e bloqueio de junções na memória; comparação STT Vulkan e homologações físicas pendentes.
 - V0.8.2 experimental: seleção de modelo e limites de geração na interface, permanência configurável e detecção de truncamento; Qwen 3 permanece experimental.

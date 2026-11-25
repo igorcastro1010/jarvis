@@ -16,6 +16,8 @@ O cadastro e a fila para Codex estão disponíveis, mas o executor automático a
 
 A investigação V0.9.1 e o bloqueio atual do sandbox Windows também estão em [docs/codex.md](docs/codex.md#v091--homologação-bloqueada).
 
+A avaliação de WSL2, Docker e sandbox Windows está em [docs/isolamento-v092.md](docs/isolamento-v092.md); não há executor homologado.
+
 O catálogo experimental de skills e a geração manual de prompts estão descritos em [docs/skills.md](docs/skills.md).
 
 A interface desktop experimental e suas limitações estão em [docs/interface.md](docs/interface.md).

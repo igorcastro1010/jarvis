@@ -1,5 +1,7 @@
 # Pendências
 
+- V0.9.2: após autorização para instalar uma distribuição WSL2, investigar sandbox Linux, acesso a montagens Windows e credenciais, cancelamento e processos órfãos em repositório fictício; medir recursos e somente então avaliar adaptador. Docker Sandboxes e sandbox Windows elevado também não foram homologados.
+
 - V0.9.1: resolver aplicação comprovada de sandbox Windows restrito; repetir homologação real em repositório fictício apenas após diagnóstico, validar encerramento da árvore, leitura/edição/testes, cancelamento e recuperação; integrar fila, aprovações separadas, memória, skills, progresso e voz antes de habilitar execução.
 
 - V0.9: comparar whisper.cpp Vulkan e Faster-Whisper com o mesmo áudio, qualidade e medições reais; avaliar estabilidade prolongada e componentes simultâneos, cancelamento efetivo da inferência, cache seguro e contexto Graphify; homologar diagnóstico e voz fisicamente.

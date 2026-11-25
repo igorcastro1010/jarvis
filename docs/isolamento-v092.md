@@ -1,0 +1,20 @@
+# V0.9.2 — investigação de isolamento
+
+Em 25/11/2026, nesta máquina, `wsl --version` informou WSL 3.0.5.0 e kernel 6.18.58.1; a versão padrão de distribuições é 2. `wsl --list --verbose` mostrou somente `docker-desktop`, parada. Ela é a distribuição interna do Docker, não um ambiente de trabalho autorizado para instalar ou testar o Codex. Não há distribuição Linux de uso geral disponível para a homologação.
+
+O Docker Desktop 4.97.0 e o cliente 29.9.2 estão instalados, mas o daemon estava parado; `docker version` não obteve versão do servidor. `docker sandbox --help` informa que o comando foi removido, e `sbx` não foi encontrado no PATH. Não se iniciou Docker Desktop, pois isso poderia iniciar cargas existentes. A RAM disponível no Windows na inspeção era 7,11 GiB de 15,87 GiB; não é consumo da solução. Sem iniciar um ambiente utilizável, não se mediram RAM incremental, inicialização ou comunicação Windows/Linux.
+
+| Opção | Situação e restrições |
+| --- | --- |
+| WSL2 com distribuição própria | Caminho preferido para investigar, mas requer instalar uma distribuição e ferramentas autorizadas. WSL não é sandbox por si só: unidades Windows podem ser montadas em `/mnt`, e interop pode expor comandos Windows. É necessário demonstrar limites do sandbox Linux, rede, montagens, credenciais e processos antes da integração. |
+| Docker Desktop comum | Instalado, porém parado. Um contêiner precisa de isolamento, montagem mínima, rede e gestão de credenciais demonstrados; a instalação existente, por si só, não garante isso. |
+| Docker Sandboxes atual | `sbx` não está instalado. A documentação descreve autenticação OAuth no host e proxy de credenciais, mas o comando padrão documentado para Codex usa bypass do sandbox interno, incompatível com a restrição desta tarefa. Mesmo outra configuração exigiria instalação autorizada e validação real. |
+| Sandbox Windows elevado | A documentação descreve configuração com alteração de contas, ACLs e firewall, sujeita a aprovação administrativa inicial. Não foi instalado, reconfigurado nem testado nesta etapa. A recusa do modo não elevado na V0.9.1 continua documentada em `codex.md`. |
+
+O Codex Windows instalado é `0.163.0-alpha.10.2` e `codex login status` informa ChatGPT. Isso não comprova autenticação em Linux: uma instalação própria do Codex teria de usar um fluxo oficial de login na distribuição, sem copiar o cache ou expor credenciais ao projeto. A documentação oficial oferece login por dispositivo quando disponível; o acesso e o isolamento de credenciais ainda precisam ser homologados.
+
+Não foi criado adaptador nem executada inferência ou tarefa Codex: nenhuma alternativa estava pronta e demonstravelmente isolada dentro das restrições. Continuam pendentes leitura, edição, testes, bloqueio de arquivos e montagens externas, timeout, cancelamento e ausência de processos órfãos em repositório fictício. Fila, aprovações e execução automática permanecem como na V0.9.1, desligada para tarefas reais.
+
+Para avançar pela opção WSL2, o passo proposto é instalar **Ubuntu como nova distribuição WSL2**, sem iniciá-la automaticamente durante a instalação. Isso requer autorização do usuário; eventuais ferramentas adicionais, login e mudanças de configuração serão avaliados antes de sua instalação ou aplicação. Depois, será necessário validar isolamento incluindo `/mnt`, interop, rede e credenciais, além de medir inicialização e memória, antes de escrever ou habilitar um adaptador. Não presumir que a distribuição ou o sandbox já sejam seguros.
+
+Find Skills foi consultada: as entradas relevantes do catálogo Docker são de origem oficial, mas não foram instaladas. Foram consultadas [documentação da Microsoft sobre WSL e montagens](https://learn.microsoft.com/en-us/windows/wsl/faq), [Docker Desktop com WSL2](https://docs.docker.com/desktop/features/wsl/), [Docker Sandboxes para Codex](https://docs.docker.com/ai/sandboxes/agents/codex/), [sandbox Windows do Codex](https://developers.openai.com/codex/windows/) e [autenticação oficial do Codex](https://developers.openai.com/codex/auth/).
