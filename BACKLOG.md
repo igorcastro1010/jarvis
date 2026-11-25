@@ -37,3 +37,5 @@
 - Implementar Instagram oficial somente após autorização e configuração da conta; não há publicação automática.
 - Integrar ferramentas 3D e impressora; nunca iniciar impressão sem confirmação.
 - Medir uso real de CPU, RAM, GPU, latência e consumo; não existem medições de inferência ainda.
+
+- Executor com Job Object: homologar em sandbox MXC efetivamente aplicado e em repositório fictício, incluindo restrições negativas e ciclo físico; o teste de Jobs aninhados não comprova compatibilidade com MXC. Investigar processos criados por mecanismos que não herdam o Job (por exemplo Win32_Process.Create). A execução real do Codex permanece desativada.

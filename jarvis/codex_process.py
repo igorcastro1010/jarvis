@@ -1,17 +1,15 @@
-"""Executa um subprocesso com eventos JSONL, prazo e verificação independente.
+"""Executor independente: o chamador deve fornecer apenas processos de teste.
 
-Este módulo é um componente; ele ainda não é ligado à fila de produção.
+Não ligado à fila; a execução real do Codex continua desativada.
 """
 from dataclasses import dataclass
 import json
-import os
 import queue
 import subprocess
 import threading
 import time
 from .codex_events import Budget, CodexEvents
-from .process_control import stop_process_tree
-
+from .windows_job import JobProcess
 
 @dataclass
 class ProcessResult:
@@ -19,53 +17,65 @@ class ProcessResult:
     events: CodexEvents
     elapsed_seconds: float
     exit_code: int | None = None
+    stdout: str = ''
+    stderr: str = ''
+    tree_terminated: bool = False
 
 
-def run_process(argv, prompt, *, verifier=None, timeout=120, cancelled=lambda: False, budget=None):
-    budget = budget or Budget()
-    budget.check_prompt(prompt)
+def run_process(argv, prompt, *, verifier=None, timeout=120, cancelled=lambda: False, budget=None, progress=None):
+    budget = budget or Budget(); budget.check_prompt(prompt)
     if timeout <= 0: raise ValueError('Timeout deve ser positivo')
     started = time.monotonic()
-    flags = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
-    process = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                               text=True, encoding='utf8', errors='replace', creationflags=flags)
-    lines = queue.Queue(maxsize=1024)
-    def read_output():
+    job = JobProcess.start(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                           text=True, encoding='utf8', errors='replace')
+    process = job.process
+    lines = queue.Queue(); output = {'stdout': [], 'stderr': []}; events = CodexEvents()
+    def read(name, stream):
         try:
-            for line in process.stdout: lines.put(line)
+            for line in stream: lines.put((name, line))
         finally:
-            process.stdout.close()
-            lines.put(None)
-    reader = threading.Thread(target=read_output, daemon=True)
-    reader.start()
+            stream.close(); lines.put((name, None))
+    def write():
+        try:
+            process.stdin.write(prompt); process.stdin.close()
+        except (OSError, ValueError): pass
+    threads = [threading.Thread(target=read, args=(name, stream), daemon=True)
+               for name, stream in [('stdout', process.stdout), ('stderr', process.stderr)]]
+    threads.append(threading.Thread(target=write, daemon=True))
+    for thread in threads: thread.start()
+    ended = set(); status = None; terminated = False
+    def collect(name, line):
+        if line is None: ended.add(name); return
+        output[name].append(line)
+        if name == 'stdout':
+            try: events.feed(json.loads(line))
+            except (ValueError, TypeError, AttributeError): pass
+        if progress: progress(line)
     try:
-        process.stdin.write(prompt)
-        process.stdin.close()
-        events = CodexEvents(); ended = False; parent_exited = None
         while True:
-            try:
-                line = lines.get(timeout=0.1)
-                if line is None: ended = True
-                else:
-                    try: events.feed(json.loads(line))
-                    except (ValueError, TypeError): pass
+            try: collect(*lines.get(timeout=.05))
             except queue.Empty: pass
-            if process.poll() is not None and parent_exited is None:
-                parent_exited = time.monotonic()
-            if parent_exited is not None and not ended and lines.empty() and time.monotonic() - parent_exited > 0.5:
-                return ProcessResult('termination_unconfirmed', events, time.monotonic()-started, process.returncode)
-            is_cancelled = cancelled()
-            if is_cancelled or time.monotonic() - started >= timeout:
-                reason = 'cancelled' if is_cancelled else 'timeout'
-                stopped = stop_process_tree(process)
-                return ProcessResult(reason if stopped else 'termination_unconfirmed', events, time.monotonic()-started, process.poll())
-            if ended and process.poll() is not None and lines.empty(): break
-        verified = bool(verifier and verifier())
-        valid = events.success(process.returncode, verified=verified)
-        if events.usage is not None and budget.exceeded(events.usage): valid = False
-        return ProcessResult('verified' if valid else 'unverified', events, time.monotonic()-started, process.returncode)
+            if process.poll() is not None and job.active_processes() == 0 and len(ended) == 2 and lines.empty():
+                terminated = True; break
+            reason = 'cancelled' if cancelled() else 'timeout' if time.monotonic() - started >= timeout else None
+            if reason:
+                try: terminated = job.terminate(timeout=10)
+                except (OSError, subprocess.TimeoutExpired): terminated = False
+                status = reason if terminated else 'termination_unconfirmed'
+                break
+        for thread in threads: thread.join(timeout=.5)
+        while not lines.empty(): collect(*lines.get_nowait())
+        if status is None:
+            verified = bool(verifier and verifier())
+            valid = events.success(process.returncode, verified=verified)
+            if events.usage is not None and budget.exceeded(events.usage): valid = False
+            status = 'verified' if valid else 'unverified'
+        return ProcessResult(status, events, time.monotonic()-started, process.poll(),
+                             ''.join(output['stdout']), ''.join(output['stderr']), terminated)
     finally:
-        if process.poll() is None:
-            stop_process_tree(process)
-        reader.join(timeout=0.2)
-        if not reader.is_alive(): process.stdout.close()
+        job.close()
+
+class CodexCLI:
+    """Reserva para integração futura; nenhuma execução real está habilitada."""
+    def run(self, prompt, cwd):
+        raise PermissionError('Codex CLI desativado até homologação e autorização operacional')

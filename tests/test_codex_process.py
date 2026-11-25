@@ -31,6 +31,7 @@ class CodexProcessTests(unittest.TestCase):
         events = [{'type':'item.completed','item':{'type':'agent_message','text':'ok'}},
                   {'type':'turn.completed','usage':{'input_tokens':10,'output_tokens':1}}]
         script = "import subprocess,sys,json; subprocess.Popen([sys.executable,'-c','import time; time.sleep(8)']); events="+repr(events)+"; [print(json.dumps(e),flush=True) for e in events]"
-        result = run_process([sys.executable, '-u', '-c', script], '', verifier=lambda: True, timeout=7)
-        self.assertEqual(result.status, 'termination_unconfirmed')
+        result = run_process([sys.executable, '-u', '-c', script], '', verifier=lambda: True, timeout=1)
+        self.assertEqual(result.status, 'timeout')
+        self.assertTrue(result.tree_terminated)
         self.assertLess(result.elapsed_seconds, 5)
