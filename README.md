@@ -19,3 +19,5 @@ O catálogo experimental de skills e a geração manual de prompts estão descri
 A interface desktop experimental e suas limitações estão em [docs/interface.md](docs/interface.md).
 
 A identidade, o contexto compartilhado e as medições da V0.7.2 estão em [docs/conversacao.md](docs/conversacao.md).
+
+Medições pontuais e limitações da auditoria de recursos estão em [docs/auditoria-desempenho.md](docs/auditoria-desempenho.md).

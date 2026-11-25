@@ -1,6 +1,7 @@
 # Histórico
 
 ## Não lançado
+- Voz importa bibliotecas de inferência sob demanda; modelos são liberados após 120 s silenciado e o timer visual deixa de rodar fora do processamento. Auditoria pontual documentada.
 - V0.7.2: identidade e relatório local de capacidades; contexto temporário compartilhado entre texto e voz, vocabulário de transcrição e mensagens identificadas com horário.
 - V0.7.1: voz residente conectada à janela, estados e níveis de captura, seleção experimental de áudio, histórico opcional e relações de grafos; teste físico da integração pendente.
 - O usuário confirmou homologação física inicial da V0.2 em 24/11/2026.

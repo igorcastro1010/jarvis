@@ -19,6 +19,7 @@
 - V0.7: integrar voz e seus estados reais à janela; implementar visualização de grafos, seleção de dispositivos, volume, modelos, inicialização, cancelamento de tarefas e GPU; homologar bandeja, notificações e ultrawide com dispositivos reais. Proteger histórico local e definir retenção.
 - V0.7.1: homologar fisicamente a voz integrada, seleção de dispositivos, volume, interrupção, bandeja e ultrawide; adicionar testes de microfone e saída na interface, métricas GPU AMD e política de retenção do histórico. A lista textual do grafo precisa de visualização interativa e validação com grafos reais.
 - V0.7.2: homologar fisicamente vocabulário de reconhecimento e alternância voz/texto; comparar modelos locais com conjunto representativo, qualidade, latência e memória antes de qualquer substituição. Medir consumo elétrico; não usar uma única resposta como benchmark de qualidade.
+- Medir consumo e qualidade em conversação física, GPU/VRAM por componente e estabilidade prolongada. Comparar Whisper Vulkan/HIP em ambiente isolado com o modelo CPU atual; verificar recarga após 120 s silenciado antes de homologar a mudança.
 - Validar e instalar Habblaud em ambiente compatível, com acesso local e sem hooks até revisão.
 - Criar permissões por ferramenta, confirmações, parada de emergência, backups testados e rollback.
 - Integrar Excel, resolver ambiguidades e persistir alterações com backup; a função atual só manipula registros em memória.
