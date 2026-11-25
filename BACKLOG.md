@@ -1,5 +1,7 @@
 # Pendências
 
+- V0.9.1: resolver aplicação comprovada de sandbox Windows restrito; repetir homologação real em repositório fictício apenas após diagnóstico, validar encerramento da árvore, leitura/edição/testes, cancelamento e recuperação; integrar fila, aprovações separadas, memória, skills, progresso e voz antes de habilitar execução.
+
 - V0.9: comparar whisper.cpp Vulkan e Faster-Whisper com o mesmo áudio, qualidade e medições reais; avaliar estabilidade prolongada e componentes simultâneos, cancelamento efetivo da inferência, cache seguro e contexto Graphify; homologar diagnóstico e voz fisicamente.
 
 - V0.8.1: homologar pesquisa e leitura por voz fisicamente, ampliar cobertura de pesquisa e fontes de notícias, avaliar qualidade de resumos e defesa contra instruções maliciosas; páginas protegidas, dinâmicas ou fora da lista não são acessíveis.

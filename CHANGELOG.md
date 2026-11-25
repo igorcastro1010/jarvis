@@ -1,6 +1,7 @@
 # Histórico
 
 ## Não lançado
+- V0.9.1 parcial: falhas e dados incompletos do CLI tratados de forma conservadora, junções recusadas em worktrees e métricas da fila exibidas; execução Codex segue desativada após recusa do sandbox restrito.
 - V0.9 parcial: diagnóstico local sob demanda, registro rotativo de contagem de tokens, limite de recuperação do serviço de voz e bloqueio de junções na memória; comparação STT Vulkan e homologações físicas pendentes.
 - V0.8.2 experimental: seleção de modelo e limites de geração na interface, permanência configurável e detecção de truncamento; Qwen 3 permanece experimental.
 - V0.8.1 experimental: pesquisa em Wikipédia e Crossref, notícias da Agência Brasil e leitura restrita com Playwright e resumo por Ollama; homologação por voz pendente.
