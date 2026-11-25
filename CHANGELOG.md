@@ -1,6 +1,7 @@
 # Histórico
 
 ## Não lançado
+- Interface desktop experimental PySide6 com chat, consultas locais, catálogo, configurações parciais e atalho; voz integrada e outros controles seguem pendentes.
 - Catálogo experimental de sugestões, busca Find Skills sob demanda, preferências persistentes e prompts manuais com memória isolada por projeto; Graphify e execução de skills permanecem pendentes.
 - Investigação parcial V0.5.3: comparação de CLI, SDK e App Server; handshake local sem inferência e interpretador experimental testado com eventos simulados. Execução automática ainda bloqueada.
 - Adaptador de fila inativo por padrão, limites observados, eventos e preparação de worktree; encerramento real do Codex ainda não homologado.
