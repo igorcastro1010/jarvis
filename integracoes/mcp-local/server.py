@@ -8,6 +8,7 @@ import re
 import subprocess
 import sys
 import time
+import urllib.request
 
 import psutil
 from openjarvis.core.types import ToolResult
@@ -17,6 +18,14 @@ from openjarvis.tools._stubs import BaseTool, ToolSpec
 
 HERE = Path(__file__).resolve().parent
 CONFIG = HERE / 'autorizados.json'
+VAULT = Path.home() / 'Documents' / 'Codex' / 'Preservacao-Jarvis-20261125' / 'data' / 'Cofre Jarvis'
+APP_PATHS = {
+    'chrome': Path(os.environ.get('ProgramFiles', r'C:\Program Files')) / 'Google/Chrome/Application/chrome.exe',
+    'visual studio code': Path(os.environ['LOCALAPPDATA']) / 'Programs/Microsoft VS Code/Code.exe',
+    'bloco de notas': Path(os.environ['SystemRoot']) / 'System32/notepad.exe',
+    'obsidian': Path(os.environ['LOCALAPPDATA']) / 'Programs/Obsidian/Obsidian.exe',
+}
+HABBLAUD_DIR = Path.home() / 'Documents/Codex/Habblaud-oficial'
 log = logging.getLogger('jarvis_local')
 log.setLevel(logging.INFO)
 handler = RotatingFileHandler(HERE / 'acoes.log', maxBytes=250_000, backupCount=2, encoding='utf-8')
@@ -86,16 +95,62 @@ def metrics():
     return {'cpu_percent': psutil.cpu_percent(interval=0.2), 'ram_total_bytes': ram.total, 'ram_disponivel_bytes': ram.available, 'gpu': gpu, 'gpu_uso_percent': None, 'vram_uso_bytes': None, 'armazenamento': disks}
 
 
+def search_memories(query):
+    from openjarvis.security.file_policy import is_sensitive_file
+    if not isinstance(query, str) or len(query.strip()) < 3 or len(query) > 100:
+        raise ValueError('Informe uma consulta entre 3 e 100 caracteres')
+    root = no_links(VAULT)
+    if not root.is_dir(): raise ValueError('Cofre autorizado indisponível')
+    words = [w.casefold() for w in re.findall(r'\w+', query) if len(w) >= 3][:8]
+    if not words: raise ValueError('Consulta muito curta')
+    found = []
+    for current, dirs, files in os.walk(root, followlinks=False):
+        dirs[:] = [d for d in dirs if not d.startswith('.') and not (Path(current)/d).is_symlink() and not getattr(Path(current)/d, 'is_junction', lambda: False)()]
+        for filename in files:
+            path = Path(current) / filename
+            if filename.startswith('.') or path.suffix.lower() != '.md' or is_sensitive_file(path): continue
+            try:
+                no_links(path)
+                if path.stat().st_size > 200_000: continue
+                text = path.read_text(encoding='utf-8', errors='replace')
+                for line in text.splitlines():
+                    low = line.casefold()
+                    if all(w in low for w in words) and not re.search(r'(?i)(api.?key|token|password|senha|secret|credencial|private.key)', line):
+                        found.append({'origem': str(path.relative_to(root)), 'trecho': line[:400]})
+                        break
+            except (OSError, ValueError): continue
+            if len(found) >= 5: return {'resultados': found}
+    return {'resultados': found}
+
+
+def open_habblaud():
+    url = 'http://127.0.0.1:4747'
+    try:
+        with urllib.request.urlopen(url + '/api/health', timeout=2) as response:
+            healthy = response.status == 200 and isinstance(json.load(response), dict)
+    except (OSError, ValueError): healthy = False
+    if not healthy:
+        node = no_links(Path(os.environ.get('ProgramFiles', r'C:\Program Files')) / 'nodejs/node.exe')
+        script = no_links(HABBLAUD_DIR / 'dist/server/index.js')
+        if not node.is_file() or not script.is_file(): raise ValueError('Habblaud oficial não encontrado')
+        env = os.environ.copy()
+        env.update(HABBLAUD_HOST='127.0.0.1', HABBLAUD_TERMINAL='0', HABBLAUD_MENSAGENS='0', HABBLAUD_UPDATE_CHECK='0')
+        subprocess.Popen([str(node), str(script)], cwd=str(HABBLAUD_DIR), env=env, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+    os.startfile(url)
+    return {'resultado': 'Abertura solicitada', 'aplicativo': 'habblaud', 'servidor_ja_ativo': healthy}
+
+
 def run(name, args):
     if name == 'local_metricas': return metrics()
     if name == 'local_projetos': return {'projetos': list(config().get('projetos', {}))}
+    if name == 'local_memorias': return search_memories(args.get('consulta'))
     if name in ('local_git_status', 'local_git_historico'):
         return {'resultado': git_query(args.get('projeto'), 'status' if name.endswith('status') else 'log')}
     if name == 'local_abrir_aplicativo':
         app = args.get('aplicativo')
-        apps = config().get('aplicativos', {})
-        if not isinstance(app, str) or app not in apps: raise ValueError('Aplicativo não autorizado')
-        target = no_links(apps[app])
+        if app == 'habblaud': return open_habblaud()
+        if not isinstance(app, str) or app not in APP_PATHS: raise ValueError('Aplicativo não autorizado')
+        target = no_links(APP_PATHS[app])
         if not target.is_file() or target.suffix.lower() != '.exe': raise ValueError('Executável inválido')
         subprocess.Popen([str(target)], close_fds=True)
         return {'resultado': 'Aplicativo iniciado', 'aplicativo': app}
@@ -121,7 +176,7 @@ class LocalTool(BaseTool):
 
 
 prop = {'projeto': {'type':'string', 'description':'Nome exato de projeto autorizado'}}
-tools = [LocalTool('local_metricas','Consulta CPU, memória, GPU e armazenamento.'), LocalTool('local_projetos','Lista nomes de projetos autorizados.'), LocalTool('local_git_status','Consulta pendências do projeto autorizado.',prop,['projeto']), LocalTool('local_git_historico','Consulta até dez commits do projeto autorizado.',prop,['projeto']), LocalTool('local_abrir_aplicativo','Abre somente aplicativo explicitamente autorizado.',{'aplicativo':{'type':'string'}},['aplicativo']), LocalTool('local_tarefas_codex','Informa estado da delegação ao Codex, atualmente desativada.')]
+tools = [LocalTool('local_metricas','Consulta CPU, memória, GPU e armazenamento.'), LocalTool('local_projetos','Lista nomes de projetos autorizados.'), LocalTool('local_memorias','Pesquisa no cofre pessoal autorizado, somente leitura.',{'consulta': {'type':'string'}},['consulta']), LocalTool('local_git_status','Consulta pendências do projeto autorizado.',prop,['projeto']), LocalTool('local_git_historico','Consulta até dez commits do projeto autorizado.',prop,['projeto']), LocalTool('local_abrir_aplicativo','Abre somente chrome, visual studio code, bloco de notas, obsidian ou habblaud.',{'aplicativo':{'type':'string','enum':['chrome','visual studio code','bloco de notas','obsidian','habblaud']}},['aplicativo']), LocalTool('local_tarefas_codex','Informa estado da delegação ao Codex, atualmente desativada.')]
 if __name__ == '__main__':
     server = MCPServer(tools=tools)
     for line in sys.stdin:
