@@ -23,21 +23,54 @@ class LocalToolsTests(unittest.TestCase):
         subprocess.run(['git', 'commit', '-qm', 'ficticio'], cwd=self.repo, check=True)
         (self.repo / 'teste.txt').write_text('b')
         self.config = root / 'autorizados.json'
-        self.config.write_text(json.dumps({'projetos': {'teste': str(self.repo)}, 'aplicativos': {}}))
+        self.config.write_text(json.dumps({'projetos': {'Racha Fortalaka': str(self.repo)}, 'aplicativos': {}}))
         self.patcher = patch.object(server, 'CONFIG', self.config)
         self.patcher.start()
         self.addCleanup(self.patcher.stop)
+        self.root_patcher = patch.object(server, 'FORTALAKA_ROOT', self.repo)
+        self.root_patcher.start()
+        self.addCleanup(self.root_patcher.stop)
 
     def test_git_and_disallowed(self):
-        self.assertIn('teste.txt', server.git_query('teste', 'status'))
-        self.assertIn('ficticio', server.git_query('teste', 'log'))
+        self.assertIn('teste.txt', server.git_query('Racha Fortalaka', 'status'))
+        self.assertIn('## ', server.git_query('Racha Fortalaka', 'status'))
+        self.assertIn('ficticio', server.git_query('Racha Fortalaka', 'log'))
         with self.assertRaises(ValueError): server.git_query('../fora', 'status')
         with self.assertRaises(ValueError): server.run('local_abrir_aplicativo', {'aplicativo': 'cmd'})
 
     def test_external_git_objects_rejected(self):
         p = self.repo / '.git' / 'objects' / 'info' / 'alternates'
         p.write_text(str(Path(self.temp.name)))
-        with self.assertRaises(ValueError): server.git_query('teste', 'status')
+        with self.assertRaises(ValueError): server.git_query('Racha Fortalaka', 'status')
+
+    def test_docs_allowlist_and_scope(self):
+        (self.repo / 'README.md').write_text('Futebol ficticio', encoding='utf8')
+        result = server.project_document('Racha Fortalaka', 'visao geral')
+        self.assertIn('Futebol ficticio', result['conteudo'])
+        with self.assertRaises(ValueError): server.project_document('Racha Fortalaka', '../../secret')
+        with self.assertRaises(ValueError): server.project_document('outro', 'visao geral')
+
+    def test_project_pending_isolation(self):
+        vault = Path(self.temp.name) / 'cofre'; vault.mkdir()
+        (vault / 'outro.md').write_text('# Outro projeto\n- [ ] tarefa de outro projeto', encoding='utf8')
+        (vault / 'fortalaka.md').write_text('# Racha Fortalaka\n- [ ] tarefa ficticia do racha', encoding='utf8')
+        with patch.object(server, 'VAULT', vault):
+            result = server.project_pending('Racha Fortalaka')
+        self.assertEqual(len(result['pendencias']), 1)
+        self.assertIn('tarefa ficticia', result['pendencias'][0]['trecho'])
+
+    def test_git_and_obsidian_have_distinct_sources_and_dates(self):
+        git = server.run('local_git_status', {'projeto': 'Racha Fortalaka'})
+        self.assertEqual(git['fonte'], 'Git local')
+        self.assertIn('consultado_em', git)
+        self.assertNotIn('pendencias_obsidian', git)
+        vault = Path(self.temp.name) / 'cofre'; vault.mkdir()
+        with patch.object(server, 'VAULT', vault):
+            memory = server.project_pending('Racha Fortalaka')
+        self.assertEqual(memory['fonte'], 'Obsidian')
+        self.assertIn('consultado_em', memory)
+        self.assertEqual(memory['mensagem'], 'Nenhuma pendência registrada no Obsidian')
+        self.assertEqual(memory['pendencias'], [])
 
     def test_metrics_and_disabled_codex(self):
         self.assertIn('ram_total_bytes', server.metrics())
@@ -61,7 +94,7 @@ class LocalToolsTests(unittest.TestCase):
         (vault / 'nota.md').write_text('projeto ficticio estrela azul', encoding='utf8')
         (vault / '.env').write_text('estrela segredoficticio', encoding='utf8')
         with patch.object(server, 'VAULT', vault):
-            result = server.run('local_memorias', {'consulta': 'estrela'})
+            result = server.search_memories('estrela')
         self.assertEqual(len(result['resultados']), 1)
         self.assertIn('estrela azul', result['resultados'][0]['trecho'])
 
@@ -70,6 +103,7 @@ class LocalToolsTests(unittest.TestCase):
         self.assertNotIn('shell_exec', exposed)
         self.assertNotIn('file_write', exposed)
         self.assertNotIn('codex_exec', exposed)
+        self.assertNotIn('local_memorias', exposed)
 
     def test_habblaud_reuses_healthy_server(self):
         with patch.object(server.urllib.request, 'urlopen') as urlopen, patch.object(server.os, 'startfile') as open_url, patch.object(server.subprocess, 'Popen') as popen:
