@@ -10,11 +10,13 @@ class SharedConversation:
         self._lock = threading.Lock()
         self._turn = threading.Lock()
         self._generation = 0
+        self._automation = None
 
     def reset(self):
         with self._lock:
             self._generation += 1
             self._session.reset()
+            if self._automation: self._automation.reset()
 
     def respond(self, message, model, memory=None, *, valid=lambda: True):
         with self._turn:
@@ -25,8 +27,10 @@ class SharedConversation:
                 session = Session(self._session.max_turns)
                 session.history = list(self._session.history)
                 session.scope = self._session.scope
+                if self._automation: session.automation = self._automation
             response = answer(message, session, model, memory)
             with self._lock:
                 if ticket == self._generation and valid():
                     self._session = session
+                    self._automation = getattr(session, 'automation', None)
             return response

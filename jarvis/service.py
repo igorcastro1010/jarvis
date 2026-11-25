@@ -70,6 +70,8 @@ class VoiceService:
                 session = Session(state.controller.session.max_turns)
                 session.history = list(state.controller.session.history)
                 session.scope = state.controller.session.scope
+                if hasattr(state.controller.session, 'automation'):
+                    session.automation = state.controller.session.automation
             if action == 'ignore':
                 with state.lock:
                     if state.valid(ticket):
@@ -89,6 +91,8 @@ class VoiceService:
                 if action == 'answer':
                     state.controller.session.history = session.history
                     state.controller.session.scope = session.scope
+                    if hasattr(session, 'automation'):
+                        state.controller.session.automation = session.automation
                 state.status = 'falando'
             if self.on_exchange:
                 self.on_exchange(text, response)

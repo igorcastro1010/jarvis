@@ -25,6 +25,8 @@ class Session:
     def reset(self) -> None:
         self.history.clear()
         self.scope = None
+        if hasattr(self, 'automation'):
+            self.automation.reset()
 
     def should_end(self, text: str) -> bool:
         return text.casefold().strip(' .!?') in ('encerrar conversa', 'finalizar conversa', 'até mais jarvis', 'sair')

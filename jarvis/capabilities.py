@@ -29,5 +29,5 @@ def capability_summary(tasks_factory=None, skills_factory=None):
     sections.append(f'Áudio: {audio}; disponibilidade de dispositivos e modelos exige verificação.')
     sections.append('Codex CLI: ' + ('detectado' if shutil.which('codex') else 'não detectado') +
                     '; execução automática desativada.')
-    sections.append('Graphify: consulta de relações quando houver grafo gerado; automação Windows não está disponível.')
+    sections.append('Graphify: consulta de relações quando houver grafo gerado. Automação limitada a ferramentas permitidas; captura e volume exigem confirmação.')
     return '\n'.join(sections)
