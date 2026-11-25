@@ -25,3 +25,5 @@ Medições pontuais e limitações da auditoria de recursos estão em [docs/audi
 Comandos, fontes e permissões da automação experimental estão em [docs/automacao.md](docs/automacao.md).
 
 Pesquisa pública, notícias e leitura resumida por Ollama estão em [docs/pesquisa.md](docs/pesquisa.md).
+
+Seleção de modelo, perfis e benchmark local estão em [docs/inteligencia.md](docs/inteligencia.md).

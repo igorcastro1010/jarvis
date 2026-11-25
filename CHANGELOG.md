@@ -1,6 +1,7 @@
 # Histórico
 
 ## Não lançado
+- V0.8.2 experimental: seleção de modelo e limites de geração na interface, permanência configurável e detecção de truncamento; Qwen 3 permanece experimental.
 - V0.8.1 experimental: pesquisa em Wikipédia e Crossref, notícias da Agência Brasil e leitura restrita com Playwright e resumo por Ollama; homologação por voz pendente.
 - V0.8 experimental: ferramentas limitadas e auditadas, consulta Open-Meteo/Wikipédia, confirmações para volume e captura e tela de histórico; homologação física pendente.
 - Voz importa bibliotecas de inferência sob demanda; modelos são liberados após 120 s silenciado e o timer visual deixa de rodar fora do processamento. Auditoria pontual documentada.

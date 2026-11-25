@@ -1,0 +1,108 @@
+[
+  {
+    "modelo": "qwen2.5:3b",
+    "resultados": [
+      {
+        "categoria": "portugues",
+        "resposta": "Um backup é uma cópia de segurança de dados que permite recuperar informações em caso de perda ou danos. É útil para garantir a integridade e a acessibilidade dos dados.",
+        "ttft_s": 45.14099999999962,
+        "total_s": 46.76599999999962,
+        "carga_s": 44.9988404,
+        "tokens_s": 80.96931841184465,
+        "fim": "stop",
+        "rss_ollama_bytes": 110821376,
+        "vram_bytes": 2085963693,
+        "modelo_memoria_bytes": 2085963693
+      },
+      {
+        "categoria": "comando",
+        "resposta": "Diga \"Abra o YouTube\" para abrir o YouTube.",
+        "ttft_s": 0.125,
+        "total_s": 0.625,
+        "carga_s": 0.007139,
+        "tokens_s": 84.11995505590973,
+        "fim": "stop",
+        "rss_ollama_bytes": 111054848,
+        "vram_bytes": 2085963693,
+        "modelo_memoria_bytes": 2085963693
+      },
+      {
+        "categoria": "contexto",
+        "resposta": "Azul.",
+        "ttft_s": 0.10900000000037835,
+        "total_s": 0.3900000000003274,
+        "carga_s": 0.0059702,
+        "tokens_s": 100.72268526678921,
+        "fim": "stop",
+        "rss_ollama_bytes": 111058944,
+        "vram_bytes": 2085963693,
+        "modelo_memoria_bytes": 2085963693
+      },
+      {
+        "categoria": "resumo",
+        "resposta": "A biblioteca abre segunda-feira às 9h, fechando aos domingos. O empréstimo dura 14 dias.",
+        "ttft_s": 0.10999999999967258,
+        "total_s": 0.5,
+        "carga_s": 0.0057879,
+        "tokens_s": 82.2674979111768,
+        "fim": "stop",
+        "rss_ollama_bytes": 111071232,
+        "vram_bytes": 2085963693,
+        "modelo_memoria_bytes": 2085963693
+      }
+    ]
+  },
+  {
+    "modelo": "qwen3:4b",
+    "resultados": [
+      {
+        "categoria": "portugues",
+        "resposta": "Okay, the user wants me to explain in two sentences what a backup is and why it's useful. Let me think.\n\nFirst, I need to define a backup clearly. A backup is a copy of data that's stored somewhere else, right? So maybe something like \"Um backup é uma cópia de dados armazenada em um local diferente do original.\"\n\nThen, why it's useful. The main reasons are to prevent data loss, recovery after accidents, and ensuring data availability. So in the second sentence, I should mention protection against loss, recovery from errors or disasters, and maybe continuity.\n\nWait, the user wants it",
+        "ttft_s": 71.34400000000005,
+        "total_s": 73.32800000000043,
+        "carga_s": 71.214625,
+        "tokens_s": 64.72560641066678,
+        "fim": "length",
+        "rss_ollama_bytes": 111050752,
+        "vram_bytes": 2876160081,
+        "modelo_memoria_bytes": 2876160081
+      },
+      {
+        "categoria": "comando",
+        "resposta": "Okay, the user is asking what command they should say to ask the assistant to open YouTube. They want the answer in a short and precise sentence in Brazilian Portuguese.\n\nFirst, I need to recall common voice command structures. In Portuguese, when using voice assistants like Google Assistant or Alexa, the typical structure is \"Abra [app]\" or \"Abre [app]\". For YouTube, it's a specific app name.\n\nWait, in Brazil, the command might be \"Abre o YouTube\" or \"Abra o YouTube\". But the user wants the command to the assistant. Let me think. For example, in Portuguese, the",
+        "ttft_s": 0.10899999999946886,
+        "total_s": 2.094000000000051,
+        "carga_s": 0.005794,
+        "tokens_s": 64.72865041775263,
+        "fim": "length",
+        "rss_ollama_bytes": 111267840,
+        "vram_bytes": 2876160081,
+        "modelo_memoria_bytes": 2876160081
+      },
+      {
+        "categoria": "contexto",
+        "resposta": "Okay, let's see. The user is asking about the color of project Alpha based on some fake data. They said that project Alpha uses blue uniform, and Beta uses green. The question is, what's the color of project Alpha?\n\nHmm, the problem states that \"o projeto Alfa usa uniforme azul\" which translates to \"Project Alpha uses blue uniform\". So in Portuguese, \"azul\" is blue. So the answer should be blue. Wait, but the user wants the answer in Brazilian Portuguese, short and precise.\n\nWait, the question is in Portuguese, so the answer should be in Portuguese too. Let me",
+        "ttft_s": 0.15599999999994907,
+        "total_s": 2.125,
+        "carga_s": 0.0065249,
+        "tokens_s": 64.84167739340509,
+        "fim": "length",
+        "rss_ollama_bytes": 111345664,
+        "vram_bytes": 2876160081,
+        "modelo_memoria_bytes": 2876160081
+      },
+      {
+        "categoria": "resumo",
+        "resposta": "Okay, let's see. The user wants a summary in Brazilian Portuguese, short and precise.\n\nOriginal text: \"A biblioteca abrirá segunda-feira às 9h. Aos domingos ficará fechada. O empréstimo dura 14 dias.\"\n\nFirst, I need to translate or rephrase this into a concise summary.\n\nThe library opens on Monday at 9 AM. It's closed on Sundays. Loan duration is 14 days.\n\nIn Portuguese, the key points are:\n\n- Abre segunda-feira às 9h\n- Fechada aos domingos\n- Emprést",
+        "ttft_s": 0.13999999999941792,
+        "total_s": 2.186999999999898,
+        "carga_s": 0.0058394,
+        "tokens_s": 64.31126653000523,
+        "fim": "length",
+        "rss_ollama_bytes": 111513600,
+        "vram_bytes": 2876160081,
+        "modelo_memoria_bytes": 2876160081
+      }
+    ]
+  }
+]
