@@ -18,9 +18,9 @@ A Find Skills encontrou o catálogo oficial `amd/skills`; a skill `local-ai-use`
 | --- | ---: | ---: | ---: | ---: | --- |
 | Qwen 2.5 3B | 2,09 GB | 0,11 GB | 45,0 / 45,14 s | 81–101 | Português, comando, contexto e resumo corretos; nenhuma resposta truncada. |
 | Qwen 3 4B | 2,88 GB | 0,11 GB | 71,21 / 71,34 s | 64–65 | Quatro respostas truncadas, gerando raciocínio em inglês; não foi possível avaliar respostas finais. |
-| Qwen 2.5 7B | pendente | pendente | pendente | pendente | Download e teste pendentes. |
-| Qwen 3 8B | pendente | pendente | pendente | pendente | Download e teste pendentes. |
+| Qwen 2.5 7B | 4,64 GB | 0,11 GB | 100,03 / 100,28 s | 43–55 | Português, comando, contexto e resumo corretos; nenhuma resposta truncada. |
+| Qwen 3 8B | pendente | pendente | pendente | pendente | Download interrompido após progresso oscilar; teste pendente. |
 
-O log do Ollama apontou Vulkan e 37/37 camadas na GPU para o 4B; o teste anterior do 3B também apontou 37/37. Os dados brutos e respostas fictícias estão em `benchmark-v082.json`. A carga concorria com downloads, e as amostras não devem ser interpretadas como tempos típicos. Mantenha o 3B como padrão; não há evidência para recomendar a troca.
+O log do Ollama apontou Vulkan e 37/37 camadas na GPU para o 4B e 29/29 para o 7B; o teste anterior do 3B apontou 37/37. Os dados brutos e respostas fictícias estão em `benchmark-v082.json`. A carga concorria com downloads, e as amostras não devem ser interpretadas como tempos típicos. O teste de contexto usa fatos fictícios no prompt, não comprova recuperação da memória Obsidian em conversação real. Mantenha o 3B como padrão; não há evidência para recomendar a troca.
 
 Referências: [API de chat Ollama](https://docs.ollama.com/api/chat), [controle de raciocínio Qwen](https://qwen.readthedocs.io/en/stable/getting_started/quickstart.html), [UI/UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill), [skills AMD](https://github.com/amd/skills).

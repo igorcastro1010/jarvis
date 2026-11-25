@@ -104,5 +104,58 @@
         "modelo_memoria_bytes": 2876160081
       }
     ]
+  },
+  {
+    "modelo": "qwen2.5:7b",
+    "resultados": [
+      {
+        "categoria": "portugues",
+        "resposta": "Um backup é uma cópia de segurança de dados ou sistemas, criada para prevenir perdas de informações importantes. É útil porque permite restaurar dados perdidos ou danificados, garantindo a continuidade do funcionamento de sistemas e a preservação de informações cruciais.",
+        "ttft_s": 100.28099999999995,
+        "total_s": 101.67199999999957,
+        "carga_s": 100.0330795,
+        "tokens_s": 43.31041731030759,
+        "fim": "stop",
+        "rss_ollama_bytes": 112164864,
+        "vram_bytes": 4635859352,
+        "modelo_memoria_bytes": 4635859352
+      },
+      {
+        "categoria": "comando",
+        "resposta": "Diga \"abra o YouTube\" ou \"abrir o YouTube\".",
+        "ttft_s": 0.125,
+        "total_s": 0.4530000000004293,
+        "carga_s": 0.0058781,
+        "tokens_s": 45.49673333454658,
+        "fim": "stop",
+        "rss_ollama_bytes": 112611328,
+        "vram_bytes": 4635859352,
+        "modelo_memoria_bytes": 4635859352
+      },
+      {
+        "categoria": "contexto",
+        "resposta": "Azul.",
+        "ttft_s": 0.15599999999994907,
+        "total_s": 0.43699999999989814,
+        "carga_s": 0.0052995,
+        "tokens_s": 54.92920998063746,
+        "fim": "stop",
+        "rss_ollama_bytes": 112664576,
+        "vram_bytes": 4635859352,
+        "modelo_memoria_bytes": 4635859352
+      },
+      {
+        "categoria": "resumo",
+        "resposta": "A biblioteca abrirá às 9h na segunda-feira, estará fechada aos domingos, e o empréstimo durará 14 dias.",
+        "ttft_s": 0.17199999999957072,
+        "total_s": 0.9849999999996726,
+        "carga_s": 0.0108168,
+        "tokens_s": 44.03917529304401,
+        "fim": "stop",
+        "rss_ollama_bytes": 112852992,
+        "vram_bytes": 4635859352,
+        "modelo_memoria_bytes": 4635859352
+      }
+    ]
   }
 ]
