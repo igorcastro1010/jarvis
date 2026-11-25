@@ -11,7 +11,7 @@ from faster_whisper import WhisperModel
 from piper import PiperVoice
 
 from .conversation import answer, ollama
-from .voice_session import VoiceController
+from .voice_session import VoiceController, VOICE_VOCAB
 
 RATE = 16000
 VOICE = Path(__file__).resolve().parent.parent / 'data/models/piper/pt_BR-faber-medium.onnx'
@@ -94,7 +94,7 @@ def _main():
                 continue
             start = time.perf_counter()
             segments, _ = stt.transcribe(audio, language='pt', beam_size=3, vad_filter=True,
-                                         initial_prompt='Jarvis é o nome do assistente.')
+                                         initial_prompt=VOICE_VOCAB)
             text = ' '.join(segment.text.strip() for segment in segments).strip()
             LOG.info('transcription_seconds=%.2f', time.perf_counter() - start)
             if not text:

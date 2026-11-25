@@ -1,6 +1,9 @@
 """Estado temporário de conversa, sem persistência de falas."""
 import re
 
+VOICE_VOCAB = ('Conversa em português sobre Jarvis, Codex, ChatGPT, Chrome, '
+               'Obsidian, Graphify, GitHub e Fortalaka.')
+
 
 def extract_wake(text: str) -> str | None:
     match = re.search(r'\bjarvis\b', text, flags=re.IGNORECASE)

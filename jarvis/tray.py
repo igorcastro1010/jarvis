@@ -15,6 +15,7 @@ from .conversation import ollama
 from .service import VoiceService
 from .voice import VOICE, listen
 from .memory import default_store
+from .voice_session import VOICE_VOCAB
 
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG = ROOT / 'data' / 'configuracao.json'
@@ -36,7 +37,7 @@ class AudioAdapters:
                 self.recognizer = WhisperModel(self.stt_model, device='cpu', compute_type='int8', cpu_threads=2,
                                                local_files_only=True)
             segments, _ = self.recognizer.transcribe(audio, language='pt', beam_size=3, vad_filter=True,
-                                                     initial_prompt='Jarvis é o nome do assistente.')
+                                                     initial_prompt=VOICE_VOCAB)
             return ' '.join(s.text.strip() for s in segments).strip()
         except Exception:
             self.recognizer = None
