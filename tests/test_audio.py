@@ -1,10 +1,16 @@
 import unittest
+import subprocess
+import sys
 from unittest.mock import patch
 import numpy as np
 from jarvis import voice
 
 
 class AudioTests(unittest.TestCase):
+    def test_voice_import_does_not_load_inference_libraries(self):
+        code = "import sys, jarvis.voice; assert 'faster_whisper' not in sys.modules; assert 'piper' not in sys.modules"
+        result = subprocess.run([sys.executable, '-c', code], capture_output=True, timeout=20)
+        self.assertEqual(result.returncode, 0, result.stderr.decode(errors='replace'))
     def test_console_refuses_when_resident_is_running(self):
         class Busy:
             def acquire(self): return False

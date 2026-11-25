@@ -7,8 +7,6 @@ import time
 
 import numpy as np
 import sounddevice as sd
-from faster_whisper import WhisperModel
-from piper import PiperVoice
 
 from .conversation import answer, ollama
 from .voice_session import VoiceController, VOICE_VOCAB
@@ -75,6 +73,8 @@ def _main():
         print('Modelo de voz ausente. Consulte as instruções de instalação.')
         return 1
     try:
+        from faster_whisper import WhisperModel
+        from piper import PiperVoice
         print('Carregando reconhecimento e voz locais...')
         stt = WhisperModel('small', device='cpu', compute_type='int8', cpu_threads=4)
         voice = PiperVoice.load(VOICE)
