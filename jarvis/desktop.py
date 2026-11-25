@@ -6,17 +6,20 @@ import json
 import subprocess
 import threading
 import time
+import html
+from datetime import datetime
 from contextlib import closing
 from pathlib import Path
 
 from PySide6.QtCore import QObject, QRunnable, QThreadPool, QTimer, Qt, Signal
-from PySide6.QtGui import QColor, QPainter, QPen
+from PySide6.QtGui import QColor, QPainter, QPen, QTextCursor
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout, QFrame, QHBoxLayout, QLabel,
                                QLineEdit, QMainWindow, QMenu, QMessageBox, QPushButton,
                                QSpinBox, QStackedWidget, QSystemTrayIcon, QTextEdit, QVBoxLayout, QWidget)
 
 from .conversation import answer, ollama
 from .voice_session import Session
+from .shared_conversation import SharedConversation
 
 STYLE = '''
 QWidget { background:#070d16; color:#d9e8f1; font-family:'Segoe UI'; font-size:13px; }
@@ -103,6 +106,7 @@ class Window(QMainWindow):
         super().__init__()
         self.model = model
         self.session = Session()
+        self.shared = SharedConversation()
         self.history_path = Path(history_path) if history_path else None
         self.history_enabled = True
         self.preferences_path = self.history_path.with_name('interface.json') if self.history_path else None
@@ -175,10 +179,11 @@ class Window(QMainWindow):
         if self.history_path:
             self.history_path.parent.mkdir(parents=True, exist_ok=True)
             with closing(sqlite3.connect(self.history_path)) as db, db:
-                db.execute('CREATE TABLE IF NOT EXISTS messages (role TEXT NOT NULL, content TEXT NOT NULL)')
-                rows = db.execute('SELECT role, content FROM messages ORDER BY rowid DESC LIMIT 100').fetchall()
+                db.execute('CREATE TABLE IF NOT EXISTS messages (role TEXT NOT NULL, content TEXT NOT NULL, created TEXT)')
+                self.ensure_history_columns(db)
+                rows = db.execute('SELECT role, content, created FROM messages ORDER BY rowid DESC LIMIT 100').fetchall()
             if self.history_enabled:
-                for role, content in reversed(rows): self.chat.insertPlainText(role + ': ' + content + '\n')
+                for role, content, created in reversed(rows): self.render_message(role, content, created or 'desconhecido')
         row = QHBoxLayout(); self.message = QLineEdit(); self.message.setPlaceholderText('Escreva uma mensagem para Jarvis…'); self.message.returnPressed.connect(self.send)
         self.send_button = QPushButton('Enviar'); self.send_button.setObjectName('primary'); self.send_button.clicked.connect(self.send)
         row.addWidget(self.message, 1); row.addWidget(self.send_button); layout.addLayout(row)
@@ -290,9 +295,10 @@ class Window(QMainWindow):
                 self.statusBar().showMessage('Não foi possível salvar a preferência.', 6000)
 
     def show_voice_exchange(self, spoken, response):
-        self.chat.insertPlainText('Você (voz): ' + spoken + '\nJarvis: ' + response + '\n\n')
+        self.render_message('Você (voz)', spoken)
+        self.render_message('Jarvis (voz)', response)
         self.remember_chat('Você (voz)', spoken)
-        self.remember_chat('Jarvis', response)
+        self.remember_chat('Jarvis (voz)', response)
 
     def show_audio_level(self, level):
         self.ring.level = max(0, min(level, 1)); self.ring.update()
@@ -300,6 +306,7 @@ class Window(QMainWindow):
     def mute_voice(self):
         if self.voice_state:
             self.voice_state.mute()
+            self.shared.reset()
             self.show_audio_level(0)
 
     def unmute_voice(self):
@@ -338,7 +345,7 @@ class Window(QMainWindow):
             capture = lambda **kwargs: listen(**kwargs, device=device_in, on_level=self.voice_signals.level.emit)
             service = VoiceService(state, lambda: load_settings(self.config_path), capture, adapters.transcribe,
                                    adapters.speak, self.model, memory=self.memory_factory() if self.memory_factory else default_store(),
-                                   on_exchange=self.voice_signals.exchange.emit)
+                                   on_exchange=self.voice_signals.exchange.emit, shared=self.shared)
             self.voice_state, self.voice_lock = state, lock
             self.voice_thread = threading.Thread(target=service.run, daemon=True, name='jarvis-voz')
             self.voice_thread.start()
@@ -394,9 +401,30 @@ class Window(QMainWindow):
         if not self.history_enabled or not self.history_path or SECRET.search(content): return
         try:
             with closing(sqlite3.connect(self.history_path, timeout=1)) as db, db:
-                db.execute('INSERT INTO messages VALUES (?, ?)', (role, content[:4000]))
+                self.ensure_history_columns(db)
+                db.execute('INSERT INTO messages (role, content, created) VALUES (?, ?, ?)',
+                           (role, content[:4000], datetime.now().astimezone().isoformat(timespec='seconds')))
         except sqlite3.Error:
             self.statusBar().showMessage('Histórico indisponível nesta mensagem.', 6000)
+
+    @staticmethod
+    def ensure_history_columns(db):
+        if 'created' not in {row[1] for row in db.execute('PRAGMA table_info(messages)')}:
+            db.execute('ALTER TABLE messages ADD COLUMN created TEXT')
+
+    def render_message(self, role, content, created=None):
+        try:
+            timestamp = datetime.fromisoformat(created).astimezone().strftime('%H:%M') if created else datetime.now().strftime('%H:%M')
+        except (ValueError, TypeError):
+            timestamp = '--:--'
+        color = '#78d9e8' if role.startswith('Jarvis') else '#aabbd0'
+        safe_role = html.escape(role)
+        safe_content = html.escape(content).replace('\n', '<br>')
+        cursor = self.chat.textCursor(); cursor.movePosition(QTextCursor.End)
+        if not self.chat.document().isEmpty(): cursor.insertBlock()
+        cursor.insertHtml(f'<p style="margin-top:12px; margin-bottom:4px; color:{color};"><b>{safe_role}</b> &nbsp; {timestamp}</p>'
+                          f'<p style="margin-top:0px; margin-bottom:14px; color:#e4eef4;">{safe_content}</p>')
+        self.chat.setTextCursor(cursor); self.chat.ensureCursorVisible()
 
     def run_job(self, fn, done):
         job = Worker(fn); self.jobs.add(job)
@@ -415,14 +443,14 @@ class Window(QMainWindow):
         text = self.message.text().strip()
         if not text or self.text_busy: return
         self.text_busy = True
-        self.message.clear(); self.chat.insertPlainText('Você: ' + text + '\n'); self.send_button.setEnabled(False); self.set_status('processando')
-        self.remember_chat('Você', text)
+        self.message.clear(); self.render_message('Você (texto)', text); self.send_button.setEnabled(False); self.set_status('processando')
+        self.remember_chat('Você (texto)', text)
         def work():
             from .memory import default_store
-            return answer(text, self.session, self.model, self.memory_factory() if self.memory_factory else default_store())
+            return self.shared.respond(text, self.model, self.memory_factory() if self.memory_factory else default_store())
         def done(response):
-            self.chat.insertPlainText('Jarvis: ' + response + '\n\n'); self.text_busy = False; self.send_button.setEnabled(True); self.set_status('disponível')
-            self.remember_chat('Jarvis', response)
+            self.render_message('Jarvis (texto)', response); self.text_busy = False; self.send_button.setEnabled(True); self.set_status('disponível')
+            self.remember_chat('Jarvis (texto)', response)
             if self.tray and not self.isVisible(): self.tray.showMessage('Jarvis', 'Resposta disponível na conversa.')
         self.run_job(work, done)
 

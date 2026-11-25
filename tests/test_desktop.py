@@ -103,6 +103,15 @@ class DesktopTests(unittest.TestCase):
         self.window.unmute_voice(); self.window.refresh_voice_status()
         self.assertEqual(self.window.status, 'aguardando')
 
+    def test_chat_labels_and_untrusted_text_are_rendered_as_text(self):
+        self.window.render_message('Você (voz)', '<b>texto literal</b>', '2026-11-24T12:34:00')
+        self.window.render_message('Jarvis (texto)', 'resposta', '2026-11-24T12:34:00')
+        text = self.window.chat.toPlainText()
+        self.assertIn('Você (voz)', text)
+        self.assertIn('<b>texto literal</b>', text)
+        self.assertIn('12:34', text)
+        self.assertIn('</b>\nJarvis (texto)', text)
+
     def test_disable_history_is_persisted_without_deletion(self):
         import json
         self.window.preferences_path = Path(self.tmp.name) / 'interface.json'
