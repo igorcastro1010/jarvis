@@ -202,7 +202,8 @@ def run(name, args):
             project(args.get('projeto'))
             return {'resultado': 'Tarefa preparada; Codex não iniciado e execução desativada.', **codex_store.create(args.get('projeto'), args.get('solicitacao'))}
         if name == 'local_codex_listar': return {'tarefas': codex_store.list(), 'execucao': 'desativada'}
-        if name == 'local_codex_status': return {'tarefa': codex_store.get(args.get('id')), 'execucao': 'desativada'}
+        if name == 'local_codex_status': return {'tarefa': codex_store.get(args.get('id')), 'eventos': codex_store.events(args.get('id')), 'execucao': 'desativada'}
+        if name == 'local_codex_cancelar': return {'tarefa': codex_store.cancel(args.get('id')), 'resultado': 'Solicitação cancelada; nenhum processo Codex foi iniciado.'}
         if name == 'local_codex_executar': return codex_store.request_execution(args.get('id'))
         raise ValueError('Ferramenta desconhecida')
     if name.startswith('local_lembrete_'):
@@ -272,6 +273,7 @@ tools.extend([
     LocalTool('local_codex_preparar', 'Prepara solicitação para o Racha Fortalaka; NÃO executa Codex. Nunca afirme que foi aprovada ou executada.', {'projeto': {'type':'string','enum':['Racha Fortalaka']}, 'solicitacao': {'type':'string','description':'Pedido do usuário, sem credenciais'}}, ['projeto','solicitacao']),
     LocalTool('local_codex_listar', 'Lista solicitações preparadas e seus estados. A execução está desativada.'),
     LocalTool('local_codex_status', 'Consulta uma solicitação preparada pelo identificador.', {'id':{'type':'string'}}, ['id']),
+    LocalTool('local_codex_cancelar', 'Cancela apenas uma solicitação ainda aguardando aprovação; nenhum processo Codex foi iniciado.', {'id':{'type':'string'}}, ['id']),
     LocalTool('local_codex_executar', 'Informa que a execução está bloqueada; nunca inicia Codex.', {'id':{'type':'string'}}, ['id']),
 ])
 reminder_fields = {'descricao':{'type':'string','description':'Descrição breve do lembrete'},'data_hora':{'type':'string','description':'Data e hora completas em ISO 8601, no horário de Fortaleza'},'recorrencia':{'type':'string','enum':['unico','diario','semanal']}}

@@ -26,3 +26,5 @@ O estado inicial é `aguardando_aprovacao`. Um eventual estado `executando` enco
 
 Antes de implementar/liberar execução: homologar pessoalmente a confirmação humana independente, demonstrar isolamento efetivo e controle de subprocessos em repositório fictício, e garantir impossibilidade de commits, push e deploy. A presença do Habblaud não comprova monitoramento de tarefas delegadas. A execução no projeto real permanece desligada.
 
+O histórico local registra transições de estado e permite cancelar pedidos que ainda aguardam aprovação. Uma impressão digital vincula uma possível aprovação futura ao ID, projeto e texto exatos; ela não é uma aprovação humana. A interface de aprovação continua deliberadamente bloqueada até ser implementada e homologada fisicamente. Testes de transições usam estados simulados, sem executar Codex. Não existe ainda executor, cópia isolada validada, captura de processos, timeout nem cancelamento de processos: não apresentar esses recursos como funcionais. O Habblaud continua monitorando apenas as sessões reais que já suporta, sem associação comprovada a esta fila.
+
