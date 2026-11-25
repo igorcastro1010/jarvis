@@ -4,6 +4,14 @@ from jarvis.service import VoiceService
 
 
 class ServiceTests(unittest.TestCase):
+    def test_voice_events_are_reported_only_for_accepted_turns(self):
+        events = []
+        service = self.make_service(iter([1, 1]), iter(['som estranho', 'Jarvis, que horas são?']))
+        service.on_exchange = lambda spoken, response: events.append((spoken, response))
+        service.step(); self.assertEqual(events, [])
+        service.step(); self.assertEqual(len(events), 1)
+        self.assertIn('Jarvis', events[0][0])
+
     def make_service(self, captures, transcriptions, speakers=None):
         self.state = AssistantState()
         self.spoken = [] if speakers is None else speakers

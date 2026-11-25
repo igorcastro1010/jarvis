@@ -22,15 +22,18 @@ LOG = logging.getLogger('jarvis')
 
 
 class AudioAdapters:
-    def __init__(self):
+    def __init__(self, stt_model='small', output_device=None, volume=1.0):
         self.recognizer = None
         self.voice = None
+        self.stt_model = stt_model
+        self.output_device = output_device
+        self.volume = volume
 
     def transcribe(self, audio):
         try:
             if self.recognizer is None:
                 from faster_whisper import WhisperModel
-                self.recognizer = WhisperModel('small', device='cpu', compute_type='int8', cpu_threads=2,
+                self.recognizer = WhisperModel(self.stt_model, device='cpu', compute_type='int8', cpu_threads=2,
                                                local_files_only=True)
             segments, _ = self.recognizer.transcribe(audio, language='pt', beam_size=3, vad_filter=True,
                                                      initial_prompt='Jarvis é o nome do assistente.')
@@ -47,7 +50,7 @@ class AudioAdapters:
             for chunk in self.voice.synthesize(text):
                 if cancelled():
                     return
-                sd.play(chunk.audio_float_array, chunk.sample_rate)
+                sd.play(chunk.audio_float_array * self.volume, chunk.sample_rate, device=self.output_device)
                 while sd.get_stream().active:
                     if cancelled():
                         sd.stop()

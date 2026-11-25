@@ -8,11 +8,12 @@ LOG = logging.getLogger('jarvis.service')
 
 
 class VoiceService:
-    def __init__(self, state, settings, capture, transcribe, speak, model, clock=time.monotonic, memory=None):
+    def __init__(self, state, settings, capture, transcribe, speak, model, clock=time.monotonic, memory=None, on_exchange=None):
         self.state, self.settings = state, settings
         self.capture, self.transcribe, self.speak, self.model = capture, transcribe, speak, model
         self.clock = clock
         self.memory = memory
+        self.on_exchange = on_exchange
 
     def step(self):
         state = self.state
@@ -66,6 +67,8 @@ class VoiceService:
                     state.controller.session.history = session.history
                     state.controller.session.scope = session.scope
                 state.status = 'falando'
+            if self.on_exchange:
+                self.on_exchange(text, response)
             self.speak(response, lambda: not state.valid(ticket))
             with state.lock:
                 if state.valid(ticket):
