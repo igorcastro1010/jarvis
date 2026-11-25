@@ -17,3 +17,5 @@ O cadastro e a fila para Codex estão disponíveis, mas o executor automático a
 O catálogo experimental de skills e a geração manual de prompts estão descritos em [docs/skills.md](docs/skills.md).
 
 A interface desktop experimental e suas limitações estão em [docs/interface.md](docs/interface.md).
+
+A identidade, o contexto compartilhado e as medições da V0.7.2 estão em [docs/conversacao.md](docs/conversacao.md).

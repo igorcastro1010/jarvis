@@ -1,6 +1,6 @@
 # Interface desktop V0.7.1 experimental
 
-A interface inicia o serviço residente de voz no mesmo processo. Diga “Jarvis” ou use o texto; transcrições aceitas e respostas aparecem no chat. Silenciar interrompe a captura ou reprodução e invalida resultados pendentes. A janela acompanha os estados do serviço e o círculo responde ao nível medido do microfone. Texto e voz ainda têm contextos temporários separados. A voz unificada não foi homologada fisicamente.
+A interface inicia o serviço residente de voz no mesmo processo. Diga “Jarvis” ou use o texto; transcrições aceitas e respostas aparecem no chat. Silenciar interrompe a captura ou reprodução e invalida resultados pendentes. A janela acompanha os estados do serviço e o círculo responde ao nível medido do microfone. Desde a V0.7.2, texto e voz compartilham contexto temporário na janela. A voz unificada não foi homologada fisicamente.
 
 Nas configurações, liste e selecione dispositivos, escolha `small` ou `tiny` para reconhecimento local e ajuste o volume do Piper; os modelos precisam estar instalados localmente. Após salvar, reinicie a aplicação para aplicar dispositivos e modelos. Índices de dispositivos podem mudar quando periféricos são reconectados: confira a lista novamente. A opção de histórico desliga novos registros e não apaga os existentes. Botões explícitos habilitam ou desabilitam a inicialização Windows da interface; ela começa desabilitada e nenhuma ação de inicialização é realizada automaticamente.
 
