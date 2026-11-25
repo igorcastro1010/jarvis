@@ -8,21 +8,24 @@ LOG = logging.getLogger('jarvis.service')
 
 
 class VoiceService:
-    def __init__(self, state, settings, capture, transcribe, speak, model, clock=time.monotonic, memory=None, on_exchange=None):
+    def __init__(self, state, settings, capture, transcribe, speak, model, clock=time.monotonic, memory=None, on_exchange=None, shared=None):
         self.state, self.settings = state, settings
         self.capture, self.transcribe, self.speak, self.model = capture, transcribe, speak, model
         self.clock = clock
         self.memory = memory
         self.on_exchange = on_exchange
+        self.shared = shared
 
     def step(self):
         state = self.state
         with state.lock:
             if state.stopped or state.status == 'silenciado':
                 return
-            state.expire(self.clock(), self.settings().inactivity_seconds)
+            expired = state.expire(self.clock(), self.settings().inactivity_seconds)
             ticket = state.ticket()
             state.status = 'ouvindo' if state.controller.active else 'aguardando'
+        if expired and self.shared:
+            self.shared.reset()
         try:
             audio = self.capture(threshold=self.settings().threshold, wait_seconds=2,
                                  cancelled=lambda: not state.valid(ticket))
@@ -57,9 +60,11 @@ class VoiceService:
             if action == 'ready':
                 response = 'Estou ouvindo, senhor.'
             elif action == 'end':
+                if self.shared: self.shared.reset()
                 response = 'Até logo, senhor.'
             else:
-                response = answer(message, session, self.model, self.memory)
+                response = (self.shared.respond(message, self.model, self.memory, valid=lambda: state.valid(ticket))
+                            if self.shared else answer(message, session, self.model, self.memory))
             with state.lock:
                 if not state.valid(ticket):
                     return
