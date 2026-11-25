@@ -20,6 +20,7 @@
 - V0.7.1: homologar fisicamente a voz integrada, seleção de dispositivos, volume, interrupção, bandeja e ultrawide; adicionar testes de microfone e saída na interface, métricas GPU AMD e política de retenção do histórico. A lista textual do grafo precisa de visualização interativa e validação com grafos reais.
 - V0.7.2: homologar fisicamente vocabulário de reconhecimento e alternância voz/texto; comparar modelos locais com conjunto representativo, qualidade, latência e memória antes de qualquer substituição. Medir consumo elétrico; não usar uma única resposta como benchmark de qualidade.
 - Medir consumo e qualidade em conversação física, GPU/VRAM por componente e estabilidade prolongada. Comparar Whisper Vulkan/HIP em ambiente isolado com o modelo CPU atual; verificar recarga após 120 s silenciado antes de homologar a mudança.
+- V0.8: homologar fisicamente abertura de aplicativos, sites, captura, volume e comandos por voz; medir GPU com fonte confiável, ampliar cidades e fontes públicas, validar instalações alternativas e melhorar seleção de diretórios autorizados. A sugestão do Ollama não executa ações e não foi amplamente avaliada.
 - Validar e instalar Habblaud em ambiente compatível, com acesso local e sem hooks até revisão.
 - Criar permissões por ferramenta, confirmações, parada de emergência, backups testados e rollback.
 - Integrar Excel, resolver ambiguidades e persistir alterações com backup; a função atual só manipula registros em memória.
