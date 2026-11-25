@@ -171,6 +171,9 @@ class Window(QMainWindow):
         for heading, widget in [('PROCESSADOR', self.cpu_label), ('MEMÓRIA', self.ram_label), ('GPU', label('Indisponível', 'value'))]:
             box = QFrame(); box.setObjectName('panel'); box_layout = QVBoxLayout(box); box_layout.addWidget(label(heading, 'eyebrow')); box_layout.addWidget(widget); strip.addWidget(box)
         layout.addLayout(strip)
+        self.diagnostic_output = label('Diagnóstico sob demanda.', 'muted')
+        diagnostic = QPushButton('Executar diagnóstico'); diagnostic.clicked.connect(self.run_diagnostic)
+        layout.addWidget(diagnostic); layout.addWidget(self.diagnostic_output)
         return page
 
     def chat_page(self):
@@ -613,6 +616,17 @@ class Window(QMainWindow):
             from .skills import discover
             return discover(query) + '\n\nResultados externos requerem revisão.'
         self.run_job(work, self.skill_list.setPlainText)
+
+    def run_diagnostic(self):
+        from .diagnostics import collect
+        def display(data):
+            vram = f"{data['vram_bytes'] / 1073741824:.2f} GiB" if data['vram_bytes'] is not None else 'indisponível'
+            latency = f"{data['latencia_ms']} ms" if data['latencia_ms'] is not None else 'indisponível'
+            voice = self.voice_state.status if self.voice_state else 'não iniciado'
+            cpu = data.get('cpu_percent'); ram = data.get('ram_percent')
+            system = f"CPU: {cpu:.0f}% | RAM: {ram:.0f}%" if cpu is not None and ram is not None else 'CPU/RAM: indisponíveis'
+            self.diagnostic_output.setText(f"{system} | Voz: {voice} | Ollama: {data['ollama']} | resposta: {latency} | VRAM: {vram} | GPU: indisponível")
+        self.run_job(collect, display)
 
     def update_metrics(self):
         try:

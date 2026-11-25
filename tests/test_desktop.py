@@ -69,6 +69,15 @@ class DesktopTests(unittest.TestCase):
         self.window.toggle_compact()
         self.assertEqual(self.window.width(), 800)
 
+    def test_diagnostic_is_async_and_marks_unknown_values(self):
+        from unittest.mock import patch
+        metrics = {'ollama': 'disponível', 'latencia_ms': 10, 'vram_bytes': None}
+        with patch('jarvis.diagnostics.collect', return_value=metrics):
+            self.window.run_diagnostic()
+            self.wait_jobs()
+        self.assertIn('indisponível', self.window.diagnostic_output.text())
+        self.assertIn('10 ms', self.window.diagnostic_output.text())
+
     def test_model_settings_persist_and_are_not_automatically_executed(self):
         root = Path(self.tmp.name)
         self.window.preferences_path = root / 'interface.json'

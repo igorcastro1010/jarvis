@@ -159,6 +159,8 @@ def ollama(messages, model='qwen2.5:3b', *, profile='equilibrado', keep_alive='2
                                          headers={'Content-Type': 'application/json'})
         with urllib.request.urlopen(request, timeout=180) as response:
             result = json.load(response)
+        from .diagnostics import record_usage
+        record_usage(result, model)
         if result.get('done_reason') != 'length' or attempt or payload['options']['num_predict'] >= 512: break
         payload['options']['num_predict'] = min(512, payload['options']['num_predict'] * 2)
     text = result['message']['content'].strip()
