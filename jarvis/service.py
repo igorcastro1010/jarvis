@@ -108,11 +108,22 @@ class VoiceService:
                     state.status = 'erro'
 
     def run(self):
+        failures = 0
         while not self.state.stopped:
             self.manage_idle(self.clock())
+            if failures >= 3 and self.state.status == 'erro':
+                time.sleep(0.5)
+                continue
             if self.state.status == 'silenciado':
+                failures = 0
                 time.sleep(0.2)
                 continue
             self.step()
             if self.state.status == 'erro':
+                failures += 1
                 time.sleep(3)
+            else:
+                failures = 0
+        if self.release_idle:
+            try: self.release_idle()
+            except Exception as exc: LOG.warning('shutdown_release_failed type=%s', type(exc).__name__)

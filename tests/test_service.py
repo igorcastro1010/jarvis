@@ -4,6 +4,21 @@ from jarvis.service import VoiceService
 
 
 class ServiceTests(unittest.TestCase):
+    def test_run_limits_consecutive_failures_until_reactivated(self):
+        from unittest.mock import patch
+        service = self.make_service(iter([]), iter([]))
+        calls = []
+        def fail_step():
+            calls.append(1)
+            service.state.status = 'erro'
+        pauses = []
+        def sleep(duration):
+            pauses.append(duration)
+            if duration == 0.5 or len(pauses) >= 5: service.state.stopped = True
+        service.step = fail_step
+        with patch('jarvis.service.time.sleep', side_effect=sleep): service.run()
+        self.assertEqual(len(calls), 3)
+        self.assertIn(0.5, pauses)
     def test_idle_release_only_after_sustained_mute(self):
         service = self.make_service(iter([]), iter([]))
         released = []
