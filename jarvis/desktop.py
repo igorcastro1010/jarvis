@@ -104,7 +104,7 @@ def label(text, name=None):
 class Window(QMainWindow):
     def __init__(self, *, model=ollama, memory_factory=None, tasks_factory=None, skills_factory=None, tray=True, history_path=None):
         super().__init__()
-        self.model = model
+        self.model = self.configured_model if model is ollama else model
         self.session = Session()
         self.shared = SharedConversation()
         self.history_path = Path(history_path) if history_path else None
@@ -257,6 +257,18 @@ class Window(QMainWindow):
         form.addRow('Microfone', self.input_device); form.addRow('Saída', self.output_device)
         form.addRow('Reconhecimento local', self.stt_model); form.addRow('Volume de voz', self.volume)
         form.addRow('Síntese', label('Piper pt-BR Faber (modelo instalado)', 'muted'))
+        from .conversation import MODELS, PROFILES
+        self.llm_model = QComboBox(); self.llm_model.addItems(MODELS)
+        self.llm_profile = QComboBox(); self.llm_profile.addItems(PROFILES)
+        self.llm_keep = QComboBox(); self.llm_keep.addItems(['0', '2m', '5m'])
+        saved = self.model_options()
+        for combo, key, fallback in ((self.llm_model, 'model', 'qwen2.5:3b'), (self.llm_profile, 'profile', 'equilibrado'), (self.llm_keep, 'keep_alive', '2m')):
+            value = saved.get(key, fallback)
+            combo.setCurrentText(value if combo.findText(value) >= 0 else fallback)
+        form.addRow('Modelo Ollama', self.llm_model); form.addRow('Perfil de resposta', self.llm_profile)
+        form.addRow('Permanência após resposta', self.llm_keep)
+        layout.addWidget(label('Instale os modelos no Ollama. 0 libera após a resposta; Qwen 3 é experimental.', 'muted'))
+        save_model = QPushButton('Salvar modelo e perfil'); save_model.clicked.connect(self.save_model_options); layout.addWidget(save_model)
         devices = QPushButton('Listar dispositivos de áudio'); devices.clicked.connect(self.list_audio_devices); layout.addWidget(devices)
         save = QPushButton('Salvar configurações de voz'); save.clicked.connect(self.save_voice_settings); layout.addWidget(save)
         self.history_checkbox = QCheckBox('Salvar histórico de conversa neste computador')
@@ -375,6 +387,33 @@ class Window(QMainWindow):
             self.set_status('erro')
             self.statusBar().showMessage('Não foi possível iniciar o serviço de voz.', 0)
             return False
+
+    def model_options(self):
+        try:
+            value = json.loads(self.preferences_path.with_name('modelo-interface.json').read_text(encoding='utf8'))
+            return value if isinstance(value, dict) else {}
+        except (OSError, ValueError, AttributeError): return {}
+
+    def save_model_options(self):
+        if self.preferences_path is None:
+            self.statusBar().showMessage('Configuração local indisponível.', 6000); return
+        options = {'model': self.llm_model.currentText(), 'profile': self.llm_profile.currentText(), 'keep_alive': self.llm_keep.currentText()}
+        try:
+            self.preferences_path.parent.mkdir(parents=True, exist_ok=True)
+            self.preferences_path.with_name('modelo-interface.json').write_text(json.dumps(options), encoding='utf8')
+            self.statusBar().showMessage('Modelo e perfil salvos para a próxima resposta.', 6000)
+        except OSError:
+            self.statusBar().showMessage('Não foi possível salvar o modelo.', 6000)
+
+    def configured_model(self, messages):
+        from .conversation import MODELS, PROFILES
+        options = self.model_options()
+        model = options.get('model', 'qwen2.5:3b')
+        profile = options.get('profile', 'equilibrado')
+        keep = options.get('keep_alive', '2m')
+        return ollama(messages, model=model if model in MODELS else MODELS[0],
+                      profile=profile if profile in PROFILES else 'equilibrado',
+                      keep_alive=keep if keep in ('0', '2m', '5m') else '2m')
 
     def save_voice_settings(self):
         from .background import Settings, save_settings

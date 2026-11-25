@@ -69,6 +69,15 @@ class DesktopTests(unittest.TestCase):
         self.window.toggle_compact()
         self.assertEqual(self.window.width(), 800)
 
+    def test_model_settings_persist_and_are_not_automatically_executed(self):
+        root = Path(self.tmp.name)
+        self.window.preferences_path = root / 'interface.json'
+        self.window.llm_model.setCurrentText('qwen3:4b')
+        self.window.llm_profile.setCurrentText('econômico')
+        self.window.llm_keep.setCurrentText('0')
+        self.window.save_model_options()
+        self.assertEqual(self.window.model_options(), {'model': 'qwen3:4b', 'profile': 'econômico', 'keep_alive': '0'})
+
     def test_idle_ring_does_not_poll_when_not_processing(self):
         self.assertFalse(self.window.ring.timer.isActive())
         self.window.set_status('processando')

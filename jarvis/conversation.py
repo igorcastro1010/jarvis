@@ -144,11 +144,26 @@ def answer(message, session, model, memory=None):
     return result
 
 
-def ollama(messages, model='qwen2.5:3b'):
-    data = json.dumps({'model': model, 'messages': messages, 'stream': False,
-                       'keep_alive': '2m', 'options': {'num_predict': 160, 'num_ctx': 2048}}).encode()
-    request = urllib.request.Request('http://127.0.0.1:11434/api/chat', data=data,
-                                     headers={'Content-Type': 'application/json'})
-    with urllib.request.urlopen(request, timeout=180) as response:
-        result = json.load(response)
-    return result['message']['content'].strip()
+MODELS = ('qwen2.5:3b', 'qwen3:4b', 'qwen2.5:7b', 'qwen3:8b')
+PROFILES = {'econômico': 160, 'equilibrado': 320, 'inteligente': 512}
+
+
+def ollama(messages, model='qwen2.5:3b', *, profile='equilibrado', keep_alive='2m'):
+    if model not in MODELS or profile not in PROFILES or keep_alive not in ('0', '2m', '5m'):
+        raise ValueError('Configuração de modelo inválida')
+    payload = {'model': model, 'messages': messages, 'stream': False,
+               'keep_alive': keep_alive, 'options': {'num_predict': PROFILES[profile], 'num_ctx': 4096}}
+    if model.startswith('qwen3:'): payload['think'] = False
+    for attempt in range(2):
+        request = urllib.request.Request('http://127.0.0.1:11434/api/chat', data=json.dumps(payload).encode(),
+                                         headers={'Content-Type': 'application/json'})
+        with urllib.request.urlopen(request, timeout=180) as response:
+            result = json.load(response)
+        if result.get('done_reason') != 'length' or attempt or payload['options']['num_predict'] >= 512: break
+        payload['options']['num_predict'] = min(512, payload['options']['num_predict'] * 2)
+    text = result['message']['content'].strip()
+    if result.get('done_reason') == 'length':
+        if model.startswith('qwen3:'):
+            return 'Resposta truncada: o modelo não concluiu dentro do limite. Tente outro modelo ou perfil.'
+        text += '\n[Resposta truncada pelo limite de geração.]'
+    return text
