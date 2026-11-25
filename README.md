@@ -1,6 +1,6 @@
 # Jarvis
 
-Base experimental independente para um assistente pessoal local no Windows. O modo de voz é experimental e ainda precisa de homologação com microfone e alto-falantes reais; não executa ações automaticamente.
+Base experimental independente para um assistente pessoal local no Windows. A V0.2 teve homologação física inicial relatada pelo usuário em 24/11/2026; a voz unificada da V0.7.1 ainda precisa de novo teste físico. Não executa ações automaticamente.
 
 Execute `python -m jarvis` para experimentar por texto. Depois de instalar as dependências de voz, use `.venv\Scripts\python.exe -m unittest discover -s tests -v` para testar. A conversação livre requer Ollama local e o modelo `qwen2.5:3b`. O roteamento para Codex apenas informa que falta integração; não executa comandos.
 

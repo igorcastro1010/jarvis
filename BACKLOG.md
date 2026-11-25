@@ -1,7 +1,7 @@
 # Pendências
 
 - Instalar e testar OpenJarvis isolado em Python 3.12; avaliar dependências e telemetria.
-- Homologar voz e palavra de ativação com usuário real, ruído e dispositivos físicos; medir estabilidade e latência fim a fim.
+- Ampliar a homologação física inicial da V0.2, relatada pelo usuário em 24/11/2026, com ruído e medições de estabilidade e latência fim a fim.
 - Ampliar avaliação de modelos e medir consumo elétrico e VRAM separadamente; repetir testes de CPU e GPU em carga sustentada.
 - Homologar a V0.3 em dispositivos reais, validar bandeja e inicialização após login; medir estabilidade e falsos acionamentos.
 - Avaliar detector de palavra-chave local mais leve e confiável, descarregamento de modelos ociosos e interrupção por voz durante a fala.
@@ -17,6 +17,7 @@
 - Criar catálogo de skills e cadastrar Fortalaka e Jack Motos sem copiar dados privados.
 - V0.6: validar consulta de Graphify por escopo e notas atuais; avaliar cache de descoberta e instalação/revisão explícita de skills. O catálogo inicial contém sugestões, não integrações executáveis; homologar voz física e cópia para a área de transferência.
 - V0.7: integrar voz e seus estados reais à janela; implementar visualização de grafos, seleção de dispositivos, volume, modelos, inicialização, cancelamento de tarefas e GPU; homologar bandeja, notificações e ultrawide com dispositivos reais. Proteger histórico local e definir retenção.
+- V0.7.1: homologar fisicamente a voz integrada, seleção de dispositivos, volume, interrupção, bandeja e ultrawide; adicionar testes de microfone e saída na interface, métricas GPU AMD, política de retenção do histórico e sincronização de contexto entre texto e voz. A lista textual do grafo precisa de visualização interativa e validação com grafos reais.
 - Validar e instalar Habblaud em ambiente compatível, com acesso local e sem hooks até revisão.
 - Criar permissões por ferramenta, confirmações, parada de emergência, backups testados e rollback.
 - Integrar Excel, resolver ambiguidades e persistir alterações com backup; a função atual só manipula registros em memória.

@@ -1,6 +1,8 @@
 # Histórico
 
 ## Não lançado
+- V0.7.1: voz residente conectada à janela, estados e níveis de captura, seleção experimental de áudio, histórico opcional e relações de grafos; teste físico da integração pendente.
+- O usuário confirmou homologação física inicial da V0.2 em 24/11/2026.
 - Interface desktop experimental PySide6 com chat, consultas locais, catálogo, configurações parciais e atalho; voz integrada e outros controles seguem pendentes.
 - Catálogo experimental de sugestões, busca Find Skills sob demanda, preferências persistentes e prompts manuais com memória isolada por projeto; Graphify e execução de skills permanecem pendentes.
 - Investigação parcial V0.5.3: comparação de CLI, SDK e App Server; handshake local sem inferência e interpretador experimental testado com eventos simulados. Execução automática ainda bloqueada.
