@@ -39,3 +39,4 @@
 - Medir uso real de CPU, RAM, GPU, latência e consumo; não existem medições de inferência ainda.
 
 - Executor com Job Object: homologar em sandbox MXC efetivamente aplicado e em repositório fictício, incluindo restrições negativas e ciclo físico; o teste de Jobs aninhados não comprova compatibilidade com MXC. Investigar processos criados por mecanismos que não herdam o Job (por exemplo Win32_Process.Create). A execução real do Codex permanece desativada.
+- MXC (25/11/2026): o sandbox elevado recusou o perfil restrito antes do programa fictício, exigindo leitura efetiva de `:root`. Resolver sem ampliar permissões indevidamente e repetir testes positivos e negativos, Job Objects e encerramento. Sem homologação física da confirmação independente, não ligar a fila MCP ao executor real nem habilitar Codex. A prévia da solicitação e captura do ID de sessão são apenas preparação; validar correlação e visualização reais no Habblaud sem publicar eventos simulados.

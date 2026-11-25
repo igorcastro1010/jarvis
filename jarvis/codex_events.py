@@ -1,5 +1,6 @@
 """Avaliação conservadora de eventos; saída do processo não é prova de sucesso."""
 from dataclasses import dataclass
+from uuid import UUID
 
 
 @dataclass(frozen=True)
@@ -22,6 +23,7 @@ class Budget:
 
 class CodexEvents:
     def __init__(self):
+        self.session_id = None
         self.completed = False
         self.failed = False
         self.message = None
@@ -29,6 +31,11 @@ class CodexEvents:
 
     def feed(self, event):
         kind = event.get('type')
+        if kind == 'thread.started' and self.session_id is None:
+            try:
+                value = event.get('thread_id')
+                if isinstance(value, str): self.session_id = str(UUID(value))
+            except ValueError: pass
         if kind in ('turn.failed', 'error'): self.failed = True
         if kind == 'item.completed':
             item = event.get('item', {})

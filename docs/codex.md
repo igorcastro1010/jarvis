@@ -76,3 +76,9 @@ Find Skills e OpenAI Docs foram consultadas; não se instalaram skills externas 
 ## Controle experimental de subprocessos
 
 O executor independente usa Job Object Windows com processo inicialmente suspenso, associação antes da retomada e `KILL_ON_JOB_CLOSE`. Timeout e cancelamento terminam os membros do Job e conferem a contagem ativa; falhas de associação abortam. Os testes usam apenas programas fictícios, inclusive filho e neto após saída do pai. Jobs aninhados foram testados sem alterar limites do Job pai. Isto não comprova isolamento nem compatibilidade com o perfil MXC não homologado; criação de processos fora da herança normal do Job também exige investigação. O adaptador Codex CLI permanece desativado e não há ligação nova à fila.
+
+## Preparação para integração (25/11/2026)
+
+Um teste local com `codex sandbox`, perfil MXC `:minimal`, leitura do runtime Python e escrita apenas em diretório temporário fictício foi recusado antes de executar o programa: `windows sandbox failed: elevated Windows sandbox requires effective :root read access`. Assim, leitura externa negada, escrita permitida e Job Objects dentro desse sandbox **não foram verificados**. Nenhuma permissão foi ampliada. A exigência de `:root` do sandbox elevado precisa ser conciliada com o isolamento pretendido antes de outra tentativa; nenhum dado do Racha ou do cofre foi usado.
+
+`codex_handoff` prepara uma prévia do pedido e sua impressão digital, sem aprovar ou executar. A associação da fila MCP ao executor real e uma confirmação humana independente física continuam pendentes. O coletor reconhece o ID de sessão emitido em `thread.started`, sem criar sessões ou enviar eventos ao Habblaud; a descoberta de uma sessão real, a correlação com a tarefa e o acompanhamento no Habblaud ainda precisam de teste real autorizado. O adaptador real permanece bloqueado. Testes fictícios da fila legada cobrem progresso, saída, erros e cancelamento.
