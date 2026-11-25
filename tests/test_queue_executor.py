@@ -30,6 +30,9 @@ class QueueExecutorTests(unittest.TestCase):
         self.assertEqual(self.store.get(self.task)['status'], 'concluído')
         self.assertEqual(self.store.get(self.task)['input_tokens'], 100)
         self.assertEqual(self.store.get(self.task)['cached_input_tokens'], 80)
+        row = self.store.list()[0]
+        self.assertEqual((row['input_tokens'], row['cached_input_tokens'], row['output_tokens']), (100, 80, 5))
+        self.assertEqual(row['elapsed_seconds'], 1)
 
     def test_cancel_racing_success_requires_review(self):
         events = SimpleNamespace(usage=None, message='Concluído')

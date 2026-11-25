@@ -69,6 +69,10 @@ class DesktopTests(unittest.TestCase):
         self.window.toggle_compact()
         self.assertEqual(self.window.width(), 800)
 
+    def test_task_view_explains_unavailable_metrics(self):
+        self.window.refresh_tasks(); self.wait_jobs()
+        self.assertIn('Nenhuma tarefa', self.window.tasks.toPlainText())
+
     def test_diagnostic_is_async_and_marks_unknown_values(self):
         from unittest.mock import patch
         metrics = {'ollama': 'disponível', 'latencia_ms': 10, 'vram_bytes': None}

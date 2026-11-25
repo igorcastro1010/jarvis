@@ -523,7 +523,12 @@ class Window(QMainWindow):
             store = self.tasks_factory() if self.tasks_factory else default_tasks()
             with store.connect() as db: projects = [row['name'] for row in db.execute('SELECT name FROM projects ORDER BY name')]
             tasks = store.list(50)
-            return 'PROJETOS\n' + ('\n'.join(projects) or 'Nenhum projeto cadastrado.') + '\n\nFILA E HISTÓRICO\n' + ('\n'.join(f"{r['id']}  ·  {r['project']}  ·  {r['status']}" for r in tasks) or 'Nenhuma tarefa.')
+            def describe(r):
+                duration = f"{r['elapsed_seconds']:.1f}s" if r.get('elapsed_seconds') is not None else 'tempo indisponível'
+                usage = (f"tokens entrada {r['input_tokens']} (cache {r['cached_input_tokens'] if r.get('cached_input_tokens') is not None else 'indisponível'}), saída {r['output_tokens']}"
+                         if r.get('input_tokens') is not None and r.get('output_tokens') is not None else 'tokens indisponíveis')
+                return f"{r['id']}  ·  {r['project']}  ·  {r['status']}  ·  {duration}  ·  {usage}"
+            return 'PROJETOS\n' + ('\n'.join(projects) or 'Nenhum projeto cadastrado.') + '\n\nFILA E HISTÓRICO\n' + ('\n'.join(describe(r) for r in tasks) or 'Nenhuma tarefa.')
         self.run_job(work, self.tasks.setPlainText)
 
     def search_memory(self):

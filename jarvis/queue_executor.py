@@ -16,7 +16,11 @@ def execute_next(store, runner, *, enabled=False):
             usage['input_tokens'] > task['max_input_tokens'] or usage['output_tokens'] > task['max_output_tokens'] or
             outcome.elapsed_seconds > task['timeout_seconds']):
             status = 'aguardando aprovação'
-        store.finish_running(ident, status, outcome.events.message, outcome.events.usage, outcome.elapsed_seconds)
+        message = outcome.events.message
+        if status == 'aguardando aprovação' and not message:
+            code = getattr(outcome, 'exit_code', None)
+            message = f'Execução não verificada; código de saída: {code if code is not None else "indisponível"}. Revisão necessária.'
+        store.finish_running(ident, status, message, outcome.events.usage, outcome.elapsed_seconds)
     except Exception:
         store.finish_running(ident, 'aguardando aprovação', 'Falha no executor; revise antes de nova tentativa.')
     return ident

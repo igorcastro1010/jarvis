@@ -106,7 +106,7 @@ class TaskStore:
 
     def list(self, limit=10):
         with self.connect() as db:
-            return [dict(r) for r in db.execute('SELECT id,project,status,created,updated FROM tasks ORDER BY created DESC LIMIT ?', (min(limit, 50),))]
+            return [dict(r) for r in db.execute('SELECT id,project,status,created,updated,input_tokens,cached_input_tokens,output_tokens,elapsed_seconds FROM tasks ORDER BY created DESC LIMIT ?', (min(limit, 50),))]
 
     def update(self, ident, status, result=None, usage=None):
         allowed = {'aguardando', 'planejando', 'executando', 'testando', 'aguardando aprovação', 'concluído', 'cancelado', 'erro'}
