@@ -86,3 +86,34 @@ class DesktopTests(unittest.TestCase):
         self.window.remember_chat('Você', 'minha senha é 123')
         with closing(sqlite3.connect(history)) as db, db:
             self.assertEqual(db.execute('SELECT content FROM messages').fetchall(), [('olá',)])
+
+    def test_voice_service_events_update_chat_and_real_state(self):
+        from jarvis.background import AssistantState, Settings
+        from jarvis.service import VoiceService
+        state = AssistantState()
+        self.window.voice_state = state
+        service = VoiceService(state, lambda: Settings(), lambda **_: 1,
+                               lambda _: 'Jarvis, que horas são?', lambda *_: None,
+                               lambda _: 'teste', on_exchange=self.window.voice_signals.exchange.emit)
+        service.step(); self.app.processEvents(); self.window.refresh_voice_status()
+        self.assertIn('Jarvis, que horas são?', self.window.chat.toPlainText())
+        self.assertEqual(self.window.status, 'ouvindo')
+        self.window.mute_voice(); self.window.refresh_voice_status()
+        self.assertEqual(self.window.status, 'silenciado')
+        self.window.unmute_voice(); self.window.refresh_voice_status()
+        self.assertEqual(self.window.status, 'aguardando')
+
+    def test_disable_history_is_persisted_without_deletion(self):
+        import json
+        self.window.preferences_path = Path(self.tmp.name) / 'interface.json'
+        self.window.set_history_enabled(False)
+        self.assertFalse(json.loads(self.window.preferences_path.read_text())['history_enabled'])
+        self.assertFalse(self.window.history_enabled)
+
+    def test_graph_view_reads_only_requested_scope(self):
+        import json
+        folder = self.memory.root / '.jarvis-grafos' / 'projeto-alfa' / 'graphify-out'
+        folder.mkdir(parents=True)
+        (folder / 'graph.json').write_text(json.dumps({'nodes': [{'id':'a'}, {'id':'b'}], 'links':[{'source':'a', 'target':'b'}]}))
+        self.window.memory_project.setText('alfa'); self.window.show_graph(); self.wait_jobs()
+        self.assertIn('a → b', self.window.memory_results.toPlainText())
