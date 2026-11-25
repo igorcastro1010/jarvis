@@ -139,7 +139,7 @@ class Window(QMainWindow):
         nav.addWidget(label('JARVIS', 'brand')); nav.addWidget(label('ASSISTENTE PESSOAL', 'eyebrow'))
         nav.addSpacing(34)
         self.stack = QStackedWidget()
-        for name, builder in [('Visão geral', self.dashboard), ('Conversa', self.chat_page), ('Projetos e tarefas', self.tasks_page), ('Memória', self.memory_page), ('Skills e prompts', self.skills_page), ('Configurações', self.settings_page)]:
+        for name, builder in [('Visão geral', self.dashboard), ('Conversa', self.chat_page), ('Projetos e tarefas', self.tasks_page), ('Memória', self.memory_page), ('Skills e prompts', self.skills_page), ('Configurações', self.settings_page), ('Ferramentas', self.tools_page)]:
             button = QPushButton(name); button.clicked.connect(lambda checked=False, i=self.stack.count(): self.stack.setCurrentIndex(i))
             nav.addWidget(button); self.stack.addWidget(builder())
         nav.addStretch(); nav.addWidget(label('LOCAL · CODEX DESATIVADO', 'eyebrow'))
@@ -270,6 +270,25 @@ class Window(QMainWindow):
         layout.addWidget(label('As alterações entram em vigor ao reiniciar o assistente residente. Dispositivos e inicialização seguem o sistema.', 'muted'))
         compact = QPushButton('Alternar modo compacto'); compact.clicked.connect(self.toggle_compact); layout.addWidget(compact)
         layout.addStretch(); return page
+
+    def tools_page(self):
+        from .automation import TOOLS
+        page, layout = self.page('FERRAMENTAS  /  07', 'Ferramentas e permissões', 'Ações explícitas, destinos fixos e confirmação para volume e captura.')
+        registry = QTextEdit(); registry.setReadOnly(True)
+        registry.setPlainText('\n'.join(f'{name.capitalize()} — {description}' for name, description in TOOLS.items()))
+        layout.addWidget(registry, 1)
+        self.automation_history = QTextEdit(); self.automation_history.setReadOnly(True)
+        self.automation_history.setPlaceholderText('O histórico local aparece aqui ao atualizar.')
+        layout.addWidget(self.automation_history, 1)
+        refresh = QPushButton('Atualizar histórico'); refresh.clicked.connect(self.refresh_automation_history); layout.addWidget(refresh)
+        return page
+
+    def refresh_automation_history(self):
+        def work():
+            from .automation import default_automation
+            rows = default_automation().history()
+            return '\n'.join(f'{created}  ·  {action}  ·  {status}' for created, action, status in rows) or 'Nenhuma automação registrada.'
+        self.run_job(work, self.automation_history.setPlainText)
 
     def toggle_compact(self):
         self.resize(800, 600) if self.width() > 900 else self.resize(1280, 800)

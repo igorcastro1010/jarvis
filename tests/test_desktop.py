@@ -63,7 +63,7 @@ class DesktopTests(unittest.TestCase):
         self.assertTrue(self.skills.list()[0]['enabled'])
 
     def test_navigation_and_compact_size(self):
-        self.assertEqual(self.window.stack.count(), 6)
+        self.assertEqual(self.window.stack.count(), 7)
         self.window.stack.setCurrentIndex(4)
         self.assertEqual(self.window.stack.currentIndex(), 4)
         self.window.toggle_compact()
