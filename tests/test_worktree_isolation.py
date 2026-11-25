@@ -1,6 +1,7 @@
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from jarvis.worktree_isolation import prepare_worktree
 
@@ -29,3 +30,8 @@ class WorktreeTests(unittest.TestCase):
         (self.repo/'nota.txt').write_text('em andamento', encoding='utf8')
         with self.assertRaises(ValueError): prepare_worktree(self.repo, self.root/'isolados', '012345abcdef')
         with self.assertRaises(ValueError): prepare_worktree(self.repo, self.root/'isolados', '../fora')
+
+    def test_worktree_root_junction_is_rejected(self):
+        root = self.root / 'isolados'
+        with patch.object(Path, 'is_junction', lambda value: value == root):
+            with self.assertRaises(ValueError): prepare_worktree(self.repo, root, '012345abcdef')

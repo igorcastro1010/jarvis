@@ -6,6 +6,9 @@ import subprocess
 
 def prepare_worktree(repository, worktree_root, task_id):
     if not re.fullmatch(r'[0-9a-f]{12}', task_id): raise ValueError('ID inválido')
+    for path in (Path(repository).absolute(), Path(worktree_root).absolute()):
+        for component in (path, *path.parents):
+            if component.is_symlink() or component.is_junction(): raise ValueError('Links e junções não são permitidos.')
     repo = Path(repository).resolve(strict=True)
     root = Path(worktree_root).resolve()
     if root == repo or repo in root.parents or root in repo.parents:
