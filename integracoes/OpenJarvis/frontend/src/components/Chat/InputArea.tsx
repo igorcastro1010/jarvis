@@ -3,7 +3,10 @@ import { Send, Square, Paperclip, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppStore, generateId } from '../../lib/store';
 import { streamChat, streamResearch } from '../../lib/sse';
-import { fetchSavings, getBase, authHeaders } from '../../lib/api';
+import { fetchSavings, getBase, authHeaders, transcribeAudio } from '../../lib/api';
+import { listenOnce } from '../../lib/voice-activity';
+import { useTtsStore } from '../../lib/tts';
+import { stripThinkTags } from '../../lib/message-text';
 import { listConnectors, getSyncStatus } from '../../lib/connectors-api';
 import { serializeToolCallArguments } from '../../lib/tool-call';
 import {
@@ -81,6 +84,8 @@ function useResearchCorpusSync(enabled: boolean): {
 
 export function InputArea() {
   const [input, setInput] = useState('');
+  const [voiceStatus, setVoiceStatus] = useState('');
+  const voiceAbort = useRef<AbortController | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -127,7 +132,7 @@ export function InputArea() {
     prevModelRef.current = selectedModel;
   }, [selectedModel, streamState.isStreaming, resetStream]);
 
-  const micDisabled = !speechEnabled || !speechAvailable || streamState.isStreaming;
+  const micDisabled = !speechEnabled || !speechAvailable || streamState.isStreaming || !!voiceStatus;
   const micReason: 'not-enabled' | 'no-backend' | 'streaming' | undefined =
     !speechEnabled ? 'not-enabled'
     : !speechAvailable ? 'no-backend'
@@ -171,8 +176,8 @@ export function InputArea() {
     resetStream();
   }, [resetStream]);
 
-  const sendMessage = useCallback(async () => {
-    const content = input.trim();
+  const sendMessage = useCallback(async (voiceText?: string) => {
+    const content = (voiceText ?? input).trim();
     if (!content || streamState.isStreaming) return;
     if (!selectedModel) {
       toast.error('Pick a model first (⌘K)');
@@ -208,6 +213,7 @@ export function InputArea() {
       timestamp: Date.now(),
       isResearch: deepResearch || undefined,
     };
+    if (voiceText !== undefined) useTtsStore.getState().markAutoSpoken(assistantMsg.id);
     addMessage(convId, assistantMsg);
 
     // Start streaming
@@ -539,6 +545,7 @@ export function InputArea() {
           .catch(() => {});
       }
     }
+    return { id: assistantMsg.id, text: accumulatedContent };
   }, [
     input,
     activeId,
@@ -554,10 +561,65 @@ export function InputArea() {
     maxTokens,
   ]);
 
+  const sendMessageRef = useRef(sendMessage);
+  sendMessageRef.current = sendMessage;
+
+  const stopVoice = useCallback(() => {
+    voiceAbort.current?.abort();
+    voiceAbort.current = null;
+    useTtsStore.getState().stop();
+    setVoiceStatus('');
+  }, []);
+
+  useEffect(() => () => {
+    voiceAbort.current?.abort();
+    useTtsStore.getState().stop();
+  }, []);
+
+  const startVoice = useCallback(async () => {
+    if (voiceAbort.current || streamState.isStreaming || !speechAvailable || !selectedModel) return;
+    const controller = new AbortController();
+    voiceAbort.current = controller;
+    try {
+      await useTtsStore.getState().ensureHealth();
+      if (!useTtsStore.getState().available) throw new Error('Voz indisponível no servidor.');
+      while (!controller.signal.aborted) {
+        setVoiceStatus('Ouvindo…');
+        const audio = await listenOnce(controller.signal);
+        if (controller.signal.aborted) break;
+        setVoiceStatus('Entendendo…');
+        const transcription = await transcribeAudio(audio);
+        if (controller.signal.aborted) break;
+        const text = transcription.text.trim();
+        if (!text) continue;
+        if (/^(encerrar|parar|terminar)( a)? conversa[.! ]*$/i.test(text)) break;
+        setVoiceStatus('Pensando…');
+        const reply = await sendMessageRef.current(text);
+        if (controller.signal.aborted || !reply) break;
+        setVoiceStatus('Falando…');
+        const tts = useTtsStore.getState();
+        await tts.speak(reply.id, stripThinkTags(reply.text));
+        if (controller.signal.aborted) break;
+        if (useTtsStore.getState().errorId === reply.id) throw new Error('Não foi possível reproduzir a resposta.');
+        await new Promise<void>((resolve) => {
+          const finish = () => { unsubscribe(); controller.signal.removeEventListener('abort', finish); resolve(); };
+          const unsubscribe = useTtsStore.subscribe((state) => { if (state.state === 'idle') finish(); });
+          controller.signal.addEventListener('abort', finish, { once: true });
+          if (controller.signal.aborted || useTtsStore.getState().state === 'idle') finish();
+        });
+        if (useTtsStore.getState().errorId === reply.id) throw new Error('Não foi possível reproduzir a resposta.');
+      }
+    } catch (error) {
+      if (!controller.signal.aborted) toast.error(error instanceof Error ? error.message : 'Erro na conversa por voz.');
+    } finally {
+      if (voiceAbort.current === controller) { voiceAbort.current = null; setVoiceStatus(''); }
+    }
+  }, [selectedModel, speechAvailable, streamState.isStreaming]);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      void sendMessage();
     }
   };
 
@@ -565,6 +627,12 @@ export function InputArea() {
     <div className="px-4 pb-4 pt-2" style={{ maxWidth: 'var(--chat-max-width)', margin: '0 auto', width: '100%' }}>
       <div className="mb-2 flex flex-col gap-1">
         <div className="flex items-center gap-2">
+          <button type="button" onClick={voiceStatus ? stopVoice : startVoice}
+            disabled={!voiceStatus && (!speechEnabled || !speechAvailable || streamState.isStreaming || !selectedModel)}
+            className="px-3 py-1 rounded-full text-xs disabled:opacity-40"
+            style={{ background: 'var(--color-accent)', color: 'white' }}>
+            {voiceStatus ? `${voiceStatus} Parar conversa` : 'Conversar por voz'}
+          </button>
           <button
             type="button"
             onClick={() => setDeepResearch(!deepResearch)}
@@ -612,7 +680,7 @@ export function InputArea() {
           rows={1}
           className="flex-1 bg-transparent outline-none resize-none text-sm leading-relaxed"
           style={{ color: 'var(--color-text)', maxHeight: '200px' }}
-          disabled={streamState.isStreaming || modelLoading}
+          disabled={streamState.isStreaming || modelLoading || !!voiceStatus}
         />
         {isCurrentChatStreaming ? (
           <button
@@ -632,8 +700,8 @@ export function InputArea() {
               reason={micReason}
             />
             <button
-              onClick={sendMessage}
-              disabled={streamState.isStreaming || !input.trim() || modelLoading || !selectedModel}
+              onClick={() => void sendMessage()}
+              disabled={streamState.isStreaming || !!voiceStatus || !input.trim() || modelLoading || !selectedModel}
               title={selectedModel ? 'Send message' : 'Pick a model first (⌘K)'}
               className="p-2 rounded-xl transition-colors shrink-0 cursor-pointer disabled:opacity-30 disabled:cursor-default"
               style={{
