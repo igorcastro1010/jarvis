@@ -18,3 +18,11 @@ O OpenJarvis usa `orchestrator` com Qwen 2.5 3B e uma lista restrita de ferramen
 Peça ao Jarvis para criar ou listar lembretes. O horário é `America/Fortaleza`; recorrências suportadas: única, diária e semanal. Alterações e cancelamentos mostram uma caixa de confirmação local do Windows, com resposta negativa por padrão e tempo limite de 60 segundos. Sem confirmação, a mudança é recusada.
 
 Os dados ficam em `~/.openjarvis/lembretes.db`. Com o Jarvis ativo, lembretes vencidos são enviados ao Windows; após uma parada, os atrasados são sinalizados ao reiniciar. Cada ocorrência é reservada antes de solicitar a notificação para impedir duplicatas entre processos. Se o processo falhar durante o envio, a ocorrência não é repetida automaticamente; consulte o histórico de entrega. A aceitação pelo Windows não garante que o sistema exibiu a notificação, pois as preferências de notificações podem bloqueá-la.
+# Fila de solicitações ao Codex
+
+As ferramentas `local_codex_preparar`, `local_codex_listar` e `local_codex_status` registram e consultam solicitações somente para o Racha Fortalaka. A fila SQLite fica localmente em `~/.openjarvis/tarefas_codex.db` e não deve ser enviada ao Git. Não inclua senhas ou informações sensíveis: o filtro de segredos é apenas preventivo e não garante detecção completa. Solicitações são dados não confiáveis, não autorizações.
+
+O estado inicial é `aguardando_aprovacao`. Um eventual estado `executando` encontrado após reinício passa a `revisao_necessaria`; isso não comprova término de processo. `local_codex_executar` sempre retorna falha e não inicia subprocesso. Não há executor habilitado nem aprovação concedida pelo modelo. Nenhuma tarefa é enviada ao Codex ou ao Habblaud nesta etapa.
+
+Antes de implementar/liberar execução: homologar pessoalmente a confirmação humana independente, demonstrar isolamento efetivo e controle de subprocessos em repositório fictício, e garantir impossibilidade de commits, push e deploy. A presença do Habblaud não comprova monitoramento de tarefas delegadas. A execução no projeto real permanece desligada.
+

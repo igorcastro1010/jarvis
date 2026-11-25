@@ -13,6 +13,7 @@ import urllib.request
 
 import psutil
 import reminders
+import codex_queue
 from openjarvis.core.types import ToolResult
 from openjarvis.mcp.protocol import MCPRequest
 from openjarvis.mcp.server import MCPServer
@@ -33,6 +34,7 @@ APP_PATHS = {
 HABBLAUD_DIR = Path.home() / 'Documents/Codex/Habblaud-oficial'
 REMINDER_DB = Path.home() / '.openjarvis' / 'lembretes.db'
 reminder_store = None
+codex_store = None
 log = logging.getLogger('jarvis_local')
 log.setLevel(logging.INFO)
 handler = RotatingFileHandler(HERE / 'acoes.log', maxBytes=250_000, backupCount=2, encoding='utf-8')
@@ -193,7 +195,16 @@ def open_habblaud():
 
 
 def run(name, args):
-    global reminder_store
+    global reminder_store, codex_store
+    if name.startswith('local_codex_'):
+        if codex_store is None: codex_store = codex_queue.TaskQueue(Path.home() / '.openjarvis' / 'tarefas_codex.db')
+        if name == 'local_codex_preparar':
+            project(args.get('projeto'))
+            return {'resultado': 'Tarefa preparada; Codex não iniciado e execução desativada.', **codex_store.create(args.get('projeto'), args.get('solicitacao'))}
+        if name == 'local_codex_listar': return {'tarefas': codex_store.list(), 'execucao': 'desativada'}
+        if name == 'local_codex_status': return {'tarefa': codex_store.get(args.get('id')), 'execucao': 'desativada'}
+        if name == 'local_codex_executar': return codex_store.request_execution(args.get('id'))
+        raise ValueError('Ferramenta desconhecida')
     if name.startswith('local_lembrete_'):
         if reminder_store is None: reminder_store = reminders.ReminderStore(REMINDER_DB)
         if name == 'local_lembrete_criar':
@@ -257,6 +268,12 @@ class LocalTool(BaseTool):
 
 prop = {'projeto': {'type':'string', 'description':'Nome exato de projeto autorizado'}}
 tools = [LocalTool('local_metricas','Consulta CPU, memória, GPU e armazenamento.'), LocalTool('local_projetos','Lista nomes de projetos autorizados.'), LocalTool('local_documentacao_projeto','Consulta documentação local do Racha Fortalaka e retorna origem e datas.',{'projeto':{'type':'string'},'tema':{'type':'string','enum':list(PROJECT_DOCS)}},['projeto','tema']), LocalTool('local_pendencias_projeto','Única fonte de tarefas do Obsidian do Racha Fortalaka. Retorna fonte, data e mensagem; se estiver vazio use a mensagem exata. Alterações Git não são tarefas do Obsidian.',prop,['projeto']), LocalTool('local_git_status','Consulta branch e alterações de arquivos do Git local com data. Essas alterações nunca são tarefas do Obsidian.',prop,['projeto']), LocalTool('local_git_historico','Consulta até dez commits do Git local com datas; não consulta tarefas do Obsidian.',prop,['projeto']), LocalTool('local_abrir_aplicativo','Abre somente chrome, visual studio code, bloco de notas, obsidian ou habblaud.',{'aplicativo':{'type':'string','enum':['chrome','visual studio code','bloco de notas','obsidian','habblaud']}},['aplicativo']), LocalTool('local_tarefas_codex','Informa estado da delegação ao Codex, atualmente desativada.')]
+tools.extend([
+    LocalTool('local_codex_preparar', 'Prepara solicitação para o Racha Fortalaka; NÃO executa Codex. Nunca afirme que foi aprovada ou executada.', {'projeto': {'type':'string','enum':['Racha Fortalaka']}, 'solicitacao': {'type':'string','description':'Pedido do usuário, sem credenciais'}}, ['projeto','solicitacao']),
+    LocalTool('local_codex_listar', 'Lista solicitações preparadas e seus estados. A execução está desativada.'),
+    LocalTool('local_codex_status', 'Consulta uma solicitação preparada pelo identificador.', {'id':{'type':'string'}}, ['id']),
+    LocalTool('local_codex_executar', 'Informa que a execução está bloqueada; nunca inicia Codex.', {'id':{'type':'string'}}, ['id']),
+])
 reminder_fields = {'descricao':{'type':'string','description':'Descrição breve do lembrete'},'data_hora':{'type':'string','description':'Data e hora completas em ISO 8601, no horário de Fortaleza'},'recorrencia':{'type':'string','enum':['unico','diario','semanal']}}
 tools.extend([
     LocalTool('local_lembrete_criar','Cria lembrete em data futura. Para data relativa consulte local_lembrete_listar antes e use agora_fortaleza; peça confirmação ao usuário se houver dúvida.',reminder_fields,['descricao','data_hora']),
