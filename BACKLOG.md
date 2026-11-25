@@ -1,5 +1,7 @@
 # Pendências
 
+- V0.9: comparar whisper.cpp Vulkan e Faster-Whisper com o mesmo áudio, qualidade e medições reais; avaliar estabilidade prolongada e componentes simultâneos, cancelamento efetivo da inferência, cache seguro e contexto Graphify; homologar diagnóstico e voz fisicamente.
+
 - V0.8.1: homologar pesquisa e leitura por voz fisicamente, ampliar cobertura de pesquisa e fontes de notícias, avaliar qualidade de resumos e defesa contra instruções maliciosas; páginas protegidas, dinâmicas ou fora da lista não são acessíveis.
 - V0.8.2: concluir download e benchmark do Qwen 3 8B; ampliar avaliação de qualidade, memória Obsidian, estabilidade, picos e latência controlada; investigar compatibilidade de `think=false` no servidor instalado antes de recomendar Qwen 3; validar UI e voz fisicamente. Não substituir o modelo padrão sem evidências.
 
