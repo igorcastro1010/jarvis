@@ -1,6 +1,7 @@
 import sys
 import threading
 import unittest
+from unittest.mock import patch
 from jarvis.codex_process import run_process
 
 class ExecutorJobTests(unittest.TestCase):
@@ -32,5 +33,5 @@ class ExecutorJobTests(unittest.TestCase):
 class DisabledAdapterTests(unittest.TestCase):
     def test_real_codex_stays_disabled(self):
         from jarvis.codex_process import CodexCLI
-        with unittest.mock.patch('jarvis.codex_process.JobProcess.start', side_effect=AssertionError('must not launch')):
+        with patch('jarvis.codex_process.JobProcess.start', side_effect=AssertionError('must not launch')):
             with self.assertRaises(PermissionError): CodexCLI().run('teste', '.')
