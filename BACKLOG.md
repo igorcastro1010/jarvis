@@ -1,5 +1,8 @@
 # Pendências
 
+- V0.8.1: homologar pesquisa e leitura por voz fisicamente, ampliar cobertura de pesquisa e fontes de notícias, avaliar qualidade de resumos e defesa contra instruções maliciosas; páginas protegidas, dinâmicas ou fora da lista não são acessíveis.
+- V0.8.2: comparar modelos locais na RX 6600 com qualidade, latência e consumo medidos antes de substituir o modelo atual.
+
 - Instalar e testar OpenJarvis isolado em Python 3.12; avaliar dependências e telemetria.
 - Ampliar a homologação física inicial da V0.2, relatada pelo usuário em 24/11/2026, com ruído e medições de estabilidade e latência fim a fim.
 - Ampliar avaliação de modelos e medir consumo elétrico e VRAM separadamente; repetir testes de CPU e GPU em carga sustentada.

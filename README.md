@@ -23,3 +23,5 @@ A identidade, o contexto compartilhado e as medições da V0.7.2 estão em [docs
 Medições pontuais e limitações da auditoria de recursos estão em [docs/auditoria-desempenho.md](docs/auditoria-desempenho.md).
 
 Comandos, fontes e permissões da automação experimental estão em [docs/automacao.md](docs/automacao.md).
+
+Pesquisa pública, notícias e leitura resumida por Ollama estão em [docs/pesquisa.md](docs/pesquisa.md).
