@@ -5,6 +5,10 @@ from jarvis.codex_process import run_process
 
 
 class CodexProcessTests(unittest.TestCase):
+    def test_failure_exit_code_is_preserved_without_output(self):
+        result = run_process([sys.executable, '-c', 'raise SystemExit(7)'], '', timeout=10)
+        self.assertEqual(result.status, 'unverified')
+        self.assertEqual(result.exit_code, 7)
     def test_structured_output_requires_independent_verification(self):
         data = [{'type':'item.completed','item':{'type':'agent_message','text':'pronto'}},
                 {'type':'turn.completed','usage':{'input_tokens':20,'cached_input_tokens':5,'output_tokens':3}}]

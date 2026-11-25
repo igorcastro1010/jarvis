@@ -18,6 +18,7 @@ class ProcessResult:
     status: str
     events: CodexEvents
     elapsed_seconds: float
+    exit_code: int | None = None
 
 
 def run_process(argv, prompt, *, verifier=None, timeout=120, cancelled=lambda: False, budget=None):
@@ -52,17 +53,17 @@ def run_process(argv, prompt, *, verifier=None, timeout=120, cancelled=lambda: F
             if process.poll() is not None and parent_exited is None:
                 parent_exited = time.monotonic()
             if parent_exited is not None and not ended and lines.empty() and time.monotonic() - parent_exited > 0.5:
-                return ProcessResult('termination_unconfirmed', events, time.monotonic()-started)
+                return ProcessResult('termination_unconfirmed', events, time.monotonic()-started, process.returncode)
             is_cancelled = cancelled()
             if is_cancelled or time.monotonic() - started >= timeout:
                 reason = 'cancelled' if is_cancelled else 'timeout'
                 stopped = stop_process_tree(process)
-                return ProcessResult(reason if stopped else 'termination_unconfirmed', events, time.monotonic()-started)
+                return ProcessResult(reason if stopped else 'termination_unconfirmed', events, time.monotonic()-started, process.poll())
             if ended and process.poll() is not None and lines.empty(): break
         verified = bool(verifier and verifier())
         valid = events.success(process.returncode, verified=verified)
         if events.usage is not None and budget.exceeded(events.usage): valid = False
-        return ProcessResult('verified' if valid else 'unverified', events, time.monotonic()-started)
+        return ProcessResult('verified' if valid else 'unverified', events, time.monotonic()-started, process.returncode)
     finally:
         if process.poll() is None:
             stop_process_tree(process)

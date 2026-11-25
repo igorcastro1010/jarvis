@@ -32,17 +32,18 @@ class CodexEvents:
         if kind in ('turn.failed', 'error'): self.failed = True
         if kind == 'item.completed':
             item = event.get('item', {})
-            if item.get('type') == 'command_execution' and (item.get('status') == 'failed' or item.get('exit_code') not in (None, 0)):
+            if item.get('type') == 'command_execution' and (item.get('status') != 'completed' or item.get('exit_code') != 0):
                 self.failed = True
             if item.get('type') == 'agent_message': self.message = item.get('text', '')
         if kind == 'turn.completed':
             self.completed = True
+            self.usage = None
             usage = event.get('usage') or {}
-            if isinstance(usage.get('input_tokens'), int) and isinstance(usage.get('output_tokens'), int):
+            if all(type(usage.get(key)) is int and usage[key] >= 0 for key in ('input_tokens', 'output_tokens')):
                 total = usage['input_tokens']; cached = usage.get('cached_input_tokens', 0)
-                if not isinstance(cached, int) or not 0 <= cached <= total: cached = 0
-                self.usage = {'input_tokens': total, 'cached_input_tokens': cached,
-                              'uncached_input_tokens': total - cached, 'output_tokens': usage['output_tokens']}
+                if type(cached) is int and 0 <= cached <= total:
+                    self.usage = {'input_tokens': total, 'cached_input_tokens': cached,
+                                  'uncached_input_tokens': total - cached, 'output_tokens': usage['output_tokens']}
 
     def success(self, exit_code, verified=False):
-        return bool(verified and exit_code == 0 and self.completed and not self.failed and self.message and self.message.strip())
+        return bool(verified and exit_code == 0 and self.completed and not self.failed and self.usage is not None and self.message and self.message.strip())
