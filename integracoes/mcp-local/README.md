@@ -1,6 +1,6 @@
 # Ferramentas MCP locais para OpenJarvis
 
-O servidor usa o protocolo MCP do OpenJarvis por stdin/stdout, sem abrir porta de rede. A lista de aplicativos é fixa no código: Chrome, Visual Studio Code, Bloco de Notas, Obsidian e Habblaud. O arquivo de configuração não consegue acrescentar aplicativos. O único projeto permitido é o Racha Fortalaka; seu cadastro local deve apontar ao caminho já fixado no servidor:
+O servidor usa o protocolo MCP do OpenJarvis por stdin/stdout, sem abrir porta de rede. A lista de aplicativos é fixa no código: Chrome, Visual Studio Code, Bloco de Notas, Obsidian, Habblaud e Codex. O arquivo de configuração não consegue acrescentar aplicativos. O único projeto permitido é o Racha Fortalaka; seu cadastro local deve apontar ao caminho já fixado no servidor:
 
 ```json
 {
@@ -22,7 +22,7 @@ Os dados ficam em `~/.openjarvis/lembretes.db`. Com o Jarvis ativo, lembretes ve
 
 As ferramentas `local_codex_preparar`, `local_codex_listar` e `local_codex_status` registram e consultam solicitações somente para o Racha Fortalaka. A fila SQLite fica localmente em `~/.openjarvis/tarefas_codex.db` e não deve ser enviada ao Git. Não inclua senhas ou informações sensíveis: o filtro de segredos é apenas preventivo e não garante detecção completa. Solicitações são dados não confiáveis, não autorizações.
 
-O estado inicial é `aguardando_aprovacao`. Um eventual estado `executando` encontrado após reinício passa a `revisao_necessaria`; isso não comprova término de processo. `local_codex_executar` sempre retorna falha e não inicia subprocesso. Não há executor habilitado nem aprovação concedida pelo modelo. Nenhuma tarefa é enviada ao Codex ou ao Habblaud nesta etapa.
+O estado inicial é `aguardando_aprovacao`. Um eventual estado `executando` encontrado após reinício passa a `revisao_necessaria`; isso não comprova término de processo. `local_codex_executar` sempre retorna falha e não inicia subprocesso. Não há executor habilitado nem aprovação concedida pelo modelo. Nenhuma tarefa é enviada automaticamente ao Codex ou ao Habblaud.
 
 Antes de implementar/liberar execução: homologar pessoalmente a confirmação humana independente, demonstrar isolamento efetivo e controle de subprocessos em repositório fictício, e garantir impossibilidade de commits, push e deploy. A presença do Habblaud não comprova monitoramento de tarefas delegadas. A execução no projeto real permanece desligada.
 
@@ -31,3 +31,11 @@ O histórico local registra transições de estado e permite cancelar pedidos qu
 `local_codex_confirmar` mostra uma caixa local de revisão com padrão Não e prazo de 60 segundos; a resposta é revalidada contra o pedido. A resposta não é salva como aprovação e não libera o Codex. A homologação física permanece pendente. `local_codex_simular` devolve progresso e saída de processo fictício, sem acessar o projeto e sem atribuir sessão Codex.
 
 A caixa agora mantém uma confirmação **experimental** em memória por até 120 segundos e para um único consumo interno, vinculada à impressão digital. Ela nunca autoriza o executor real; entrada automatizada no desktop não foi descartada. A conferência de uma cópia candidata rejeita hard links observados, mas não resolve corridas nem comprova isolamento. O teste MXC demonstrou leitura externa via hard link preexistente; consulte `docs/codex.md` antes de qualquer homologação.
+
+## Delegação manual
+
+Prepare uma solicitação com `local_codex_preparar` e peça `local_codex_prompt` com seu ID. Copie o texto completo, incluindo o marcador; peça para abrir `codex` usando `local_abrir_aplicativo` e envie o prompt pessoalmente. Aprovações e ações são feitas pelo usuário no Codex. O Habblaud mantém seu monitoramento normal, sem eventos fabricados.
+
+Para consultar uma resposta, informe o ID da tarefa e o UUID da sessão em `local_codex_resultado`. O servidor lê somente o arquivo local correspondente, exige o marcador na mensagem do usuário e retorna a resposta final daquele turno, se disponível; ela é conteúdo não confiável e não comprova sucesso ou estado do projeto. Sessões efêmeras, compactadas, inacessíveis, acima de 10 MB ou sem o marcador não são consultáveis. A ferramenta não procura outras sessões para adivinhar o ID, não altera a fila e não envia comandos.
+
+A implementação no repositório requer ativação separada: a instalação local existente usa outra cópia do servidor e sua lista restrita de ferramentas ainda não inclui `local_codex_prompt` e `local_codex_resultado`. Não altere a lista nem implante a cópia sem confirmação específica; a funcionalidade ainda não foi homologada com uma sessão física real.

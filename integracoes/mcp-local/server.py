@@ -14,6 +14,7 @@ import urllib.request
 import psutil
 import reminders
 import codex_queue
+import codex_manual
 import codex_simulation
 from openjarvis.core.types import ToolResult
 from openjarvis.mcp.protocol import MCPRequest
@@ -202,6 +203,8 @@ def run(name, args):
         if name == 'local_codex_preparar':
             project(args.get('projeto'))
             return {'resultado': 'Tarefa preparada; Codex não iniciado e execução desativada.', **codex_store.create(args.get('projeto'), args.get('solicitacao'))}
+        if name == 'local_codex_prompt': return codex_manual.prepare(codex_store, args.get('id'), project(FORTALAKA_NAME))
+        if name == 'local_codex_resultado': return codex_manual.read_result(codex_store, args.get('id'), args.get('sessao'))
         if name == 'local_codex_listar': return {'tarefas': codex_store.list(), 'execucao': 'desativada'}
         if name == 'local_codex_status': return {'tarefa': codex_store.get(args.get('id')), 'eventos': codex_store.events(args.get('id')), 'execucao': 'desativada'}
         if name == 'local_codex_cancelar': return {'tarefa': codex_store.cancel(args.get('id')), 'resultado': 'Solicitação cancelada; nenhum processo Codex foi iniciado.'}
@@ -243,6 +246,9 @@ def run(name, args):
     if name == 'local_abrir_aplicativo':
         app = args.get('aplicativo')
         if app == 'habblaud': return open_habblaud()
+        if app == 'codex':
+            os.startfile('shell:AppsFolder\\OpenAI.Codex_2p2nqsd0c76g0!App')
+            return {'resultado': 'Abertura solicitada', 'aplicativo': 'codex'}
         if not isinstance(app, str) or app not in APP_PATHS: raise ValueError('Aplicativo não autorizado')
         target = no_links(APP_PATHS[app])
         if not target.is_file() or target.suffix.lower() != '.exe': raise ValueError('Executável inválido')
@@ -271,9 +277,11 @@ class LocalTool(BaseTool):
 
 
 prop = {'projeto': {'type':'string', 'description':'Nome exato de projeto autorizado'}}
-tools = [LocalTool('local_metricas','Consulta CPU, memória, GPU e armazenamento.'), LocalTool('local_projetos','Lista nomes de projetos autorizados.'), LocalTool('local_documentacao_projeto','Consulta documentação local do Racha Fortalaka e retorna origem e datas.',{'projeto':{'type':'string'},'tema':{'type':'string','enum':list(PROJECT_DOCS)}},['projeto','tema']), LocalTool('local_pendencias_projeto','Única fonte de tarefas do Obsidian do Racha Fortalaka. Retorna fonte, data e mensagem; se estiver vazio use a mensagem exata. Alterações Git não são tarefas do Obsidian.',prop,['projeto']), LocalTool('local_git_status','Consulta branch e alterações de arquivos do Git local com data. Essas alterações nunca são tarefas do Obsidian.',prop,['projeto']), LocalTool('local_git_historico','Consulta até dez commits do Git local com datas; não consulta tarefas do Obsidian.',prop,['projeto']), LocalTool('local_abrir_aplicativo','Abre somente chrome, visual studio code, bloco de notas, obsidian ou habblaud.',{'aplicativo':{'type':'string','enum':['chrome','visual studio code','bloco de notas','obsidian','habblaud']}},['aplicativo']), LocalTool('local_tarefas_codex','Informa estado da delegação ao Codex, atualmente desativada.')]
+tools = [LocalTool('local_metricas','Consulta CPU, memória, GPU e armazenamento.'), LocalTool('local_projetos','Lista nomes de projetos autorizados.'), LocalTool('local_documentacao_projeto','Consulta documentação local do Racha Fortalaka e retorna origem e datas.',{'projeto':{'type':'string'},'tema':{'type':'string','enum':list(PROJECT_DOCS)}},['projeto','tema']), LocalTool('local_pendencias_projeto','Única fonte de tarefas do Obsidian do Racha Fortalaka. Retorna fonte, data e mensagem; se estiver vazio use a mensagem exata. Alterações Git não são tarefas do Obsidian.',prop,['projeto']), LocalTool('local_git_status','Consulta branch e alterações de arquivos do Git local com data. Essas alterações nunca são tarefas do Obsidian.',prop,['projeto']), LocalTool('local_git_historico','Consulta até dez commits do Git local com datas; não consulta tarefas do Obsidian.',prop,['projeto']), LocalTool('local_abrir_aplicativo','Abre somente chrome, visual studio code, bloco de notas, obsidian, habblaud ou codex.',{'aplicativo':{'type':'string','enum':['chrome','visual studio code','bloco de notas','obsidian','habblaud']}},['aplicativo']), LocalTool('local_tarefas_codex','Informa estado da delegação ao Codex, atualmente desativada.')]
 tools.extend([
     LocalTool('local_codex_preparar', 'Prepara solicitação para o Racha Fortalaka; NÃO executa Codex. Nunca afirme que foi aprovada ou executada.', {'projeto': {'type':'string','enum':['Racha Fortalaka']}, 'solicitacao': {'type':'string','description':'Pedido do usuário, sem credenciais'}}, ['projeto','solicitacao']),
+    LocalTool('local_codex_prompt', 'Exiba o prompt integral, incluindo o marcador, para o usuário copiar e enviar manualmente ao Codex; não executa a tarefa.', {'id':{'type':'string'}}, ['id']),
+    LocalTool('local_codex_resultado', 'Consulta somente leitura da sessão Codex informada, quando associada à tarefa; não confirma sucesso.', {'id':{'type':'string'},'sessao':{'type':'string'}}, ['id','sessao']),
     LocalTool('local_codex_listar', 'Lista solicitações preparadas e seus estados. A execução está desativada.'),
     LocalTool('local_codex_status', 'Consulta uma solicitação preparada pelo identificador.', {'id':{'type':'string'}}, ['id']),
     LocalTool('local_codex_cancelar', 'Cancela apenas uma solicitação ainda aguardando aprovação; nenhum processo Codex foi iniciado.', {'id':{'type':'string'}}, ['id']),
