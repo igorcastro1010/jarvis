@@ -1,6 +1,5 @@
 """Simulação local isolada da execução real e confirmação não operacional."""
 import ctypes
-import json
 from pathlib import Path
 import sys
 
@@ -8,6 +7,7 @@ root = str(Path(__file__).resolve().parents[2])
 if root not in sys.path: sys.path.insert(0, root)
 from jarvis.codex_handoff import prepare_queue_handoff
 from jarvis.codex_process import run_process
+from codex_approval import ApprovalBroker
 
 
 def confirm_dialog(text):
@@ -20,19 +20,14 @@ def confirm_dialog(text):
         return False
 
 
+_approval_broker = ApprovalBroker(lambda message: confirm_dialog(message), ttl=120)
+
+
 def confirm(queue, item_id):
     preview = prepare_queue_handoff(queue, item_id)
-    message = ('Confirmar este pedido após sua revisão? Esta confirmação é experimental e NÃO permite executar o Codex.\n\n'
-               + json.dumps({key: preview[key] for key in ('id','projeto','solicitacao','impressao_digital')}, ensure_ascii=True, indent=2))
-    accepted = confirm_dialog(message)
-    try:
-        current = prepare_queue_handoff(queue, item_id)
-        unchanged = current['impressao_digital'] == preview['impressao_digital']
-    except ValueError:
-        unchanged = False
-    return {'confirmado': bool(accepted and unchanged), 'confirmacao_humana': bool(accepted and unchanged), 'execucao_real_autorizada': False,
-            'impressao_digital': preview['impressao_digital'], 'homologacao_fisica': 'pendente'}
-
+    accepted = _approval_broker.request(queue, item_id)
+    return {'confirmado': accepted, 'confirmacao_humana': accepted, 'execucao_real_autorizada': False,
+            'impressao_digital': _approval_broker.fingerprint(item_id) if accepted else preview['impressao_digital'], 'homologacao_fisica': 'pendente'}
 
 def simulate(queue, item_id):
     task = queue.get(item_id)

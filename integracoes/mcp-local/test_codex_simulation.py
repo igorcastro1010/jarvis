@@ -67,3 +67,9 @@ class SimulationTests(unittest.TestCase):
         with patch('codex_simulation.run_process', return_value=result):
             response = tool.execute(id=self.item['id'])
         self.assertFalse(response.success)
+
+    def test_returned_fingerprint_is_bound_to_accepted_dialog(self):
+        with patch('codex_simulation.prepare_queue_handoff', return_value={'impressao_digital':'stale'}), patch('codex_simulation.confirm_dialog', return_value=True):
+            result = server.run('local_codex_confirmar', {'id': self.item['id']})
+        self.assertTrue(result['confirmacao_humana'])
+        self.assertEqual(result['impressao_digital'], self.queue.approval_fingerprint(self.item['id']))

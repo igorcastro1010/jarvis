@@ -77,5 +77,9 @@ def run_process(argv, prompt, *, verifier=None, timeout=120, cancelled=lambda: F
 
 class CodexCLI:
     """Reserva para integração futura; nenhuma execução real está habilitada."""
+    def prepare(self, source, copy):
+        from .codex_copy_plan import prepare_copy_plan
+        return prepare_copy_plan(source, copy)
+
     def run(self, prompt, cwd):
         raise PermissionError('Codex CLI desativado até homologação e autorização operacional')
