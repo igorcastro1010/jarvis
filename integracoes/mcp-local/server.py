@@ -14,6 +14,7 @@ import urllib.request
 import psutil
 import reminders
 import codex_queue
+import codex_simulation
 from openjarvis.core.types import ToolResult
 from openjarvis.mcp.protocol import MCPRequest
 from openjarvis.mcp.server import MCPServer
@@ -204,6 +205,8 @@ def run(name, args):
         if name == 'local_codex_listar': return {'tarefas': codex_store.list(), 'execucao': 'desativada'}
         if name == 'local_codex_status': return {'tarefa': codex_store.get(args.get('id')), 'eventos': codex_store.events(args.get('id')), 'execucao': 'desativada'}
         if name == 'local_codex_cancelar': return {'tarefa': codex_store.cancel(args.get('id')), 'resultado': 'Solicitação cancelada; nenhum processo Codex foi iniciado.'}
+        if name == 'local_codex_simular': return codex_simulation.simulate(codex_store, args.get('id'))
+        if name == 'local_codex_confirmar': return codex_simulation.confirm(codex_store, args.get('id'))
         if name == 'local_codex_executar': return codex_store.request_execution(args.get('id'))
         raise ValueError('Ferramenta desconhecida')
     if name.startswith('local_lembrete_'):
@@ -274,6 +277,8 @@ tools.extend([
     LocalTool('local_codex_listar', 'Lista solicitações preparadas e seus estados. A execução está desativada.'),
     LocalTool('local_codex_status', 'Consulta uma solicitação preparada pelo identificador.', {'id':{'type':'string'}}, ['id']),
     LocalTool('local_codex_cancelar', 'Cancela apenas uma solicitação ainda aguardando aprovação; nenhum processo Codex foi iniciado.', {'id':{'type':'string'}}, ['id']),
+    LocalTool('local_codex_simular', 'Executa somente processo fictício fixo; não executa a tarefa nem Codex.', {'id':{'type':'string'}}, ['id']),
+    LocalTool('local_codex_confirmar', 'Mostra janela local experimental; não autoriza execução real.', {'id':{'type':'string'}}, ['id'], timeout=85),
     LocalTool('local_codex_executar', 'Informa que a execução está bloqueada; nunca inicia Codex.', {'id':{'type':'string'}}, ['id']),
 ])
 reminder_fields = {'descricao':{'type':'string','description':'Descrição breve do lembrete'},'data_hora':{'type':'string','description':'Data e hora completas em ISO 8601, no horário de Fortaleza'},'recorrencia':{'type':'string','enum':['unico','diario','semanal']}}
